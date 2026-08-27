@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petrol Pump Shift Tracker</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --accent-glow: rgba(37, 99, 235, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 16px;
+            padding-bottom: 50px;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .header-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-title .bounce-icon {
+            display: inline-block;
+            animation: bounce 2s infinite ease-in-out;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-top: 24px;
+            margin-bottom: 14px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .dropdown-toggle-btn {
+            width: 100%;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            margin-top: 16px;
+            user-select: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dropdown-toggle-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .dropdown-toggle-btn .arrow-icon {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .dropdown-toggle-btn.active .arrow-icon {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-content {
+            display: none;
+            padding-top: 12px;
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .dropdown-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+            animation: slideDown 0.3s ease-out forwards;
+        }
+
+        .card {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 14px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .flex-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .flex-row input, .flex-row select, .single-input input {
+            flex: 1;
+            padding: 11px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 0;
+            background: #ffffff;
+            color: var(--text-main);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .flex-row input:focus, .flex-row select:focus, .single-input input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .btn-add {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 11px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13.5px;
+            margin-bottom: 10px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-add:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-remove {
+            background: #fee2e2;
+            color: var(--danger-color);
+            border: 1px solid #fca5a5;
+            padding: 0 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-remove:hover {
+            background: var(--danger-color);
+            color: #ffffff;
+        }
+
+        .single-input {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .single-input label {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .result-box {
+            margin-top: 28px;
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            color: #ffffff;
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15);
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14.5px;
+            color: #94a3b8;
+        }
+
+        .result-row span.val {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .final-result {
+            font-size: 20px;
+            font-weight: 700;
+            padding-top: 14px;
+            border-top: 1px solid #334155;
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .surplus { 
+            color: #34d399 !important; 
+            text-shadow: 0 0 10px rgba(52, 211, 153, 0.2);
+        }
+        
+        .shortage { 
+            color: #f87171 !important; 
+            text-shadow: 0 0 10px rgba(248, 113, 113, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-title">
+        <span class="bounce-icon">⛽</span> Shift Audit & Cash Settlement
+    </div>
+
+    <!-- 1. Meter Sales -->
+    <div class="section-title">📊 1. Fuel Nozzle Readings</div>
+    <div id="nozzlesList"></div>
+    <button class="btn-add" onclick="addNozzle()">➕ Add Fuel Nozzle</button>
+
+    <!-- 2. Cash Management -->
+    <div class="section-title">💵 2. Shift Cash Counter</div>
+    <div class="single-input">
+        <label>Opening Change Given (+):</label>
+        <input type="number" id="openingBalance" placeholder="0.00" oninput="calculateShift()">
+    </div>
+    <div class="single-input">
+        <label>Physical Cash In Hand:</label>
+        <input type="number" id="cashInHand" placeholder="0.00" oninput="calculateShift()">
+    </div>
+    <div class="single-input">
+        <label>Cash Deposited to Safe/Counter:</label>
+        <input type="number" id="cashOut" placeholder="0.00" oninput="calculateShift()">
+    </div>
+    <div class="single-input">
+        <label>Salary Advance / Expense:</label>
+        <input type="number" id="sapat" placeholder="0.00" oninput="calculateShift()">
+    </div>
+
+    <!-- 3. Online Payments Dropdown -->
+    <div class="dropdown-toggle-btn" id="fonepayBtn" onclick="toggleDropdown('fonepayContainer', 'fonepayBtn')">
+        <span>📲 3. Fonepay / Online Total: <b style="color:var(--primary-color);">₹ <span id="hdrFonepayTotal">0.00</span></b></span>
+        <span class="arrow-icon">▼</span>
+    </div>
+    <div class="dropdown-content" id="fonepayContainer">
+        <div id="fonepayList"></div>
+        <button class="btn-add" onclick="addFonepay()">➕ Add Online Transaction</button>
+    </div>
+
+    <!-- 4. Credit Sales Dropdown -->
+    <div class="dropdown-toggle-btn" id="creditBtn" onclick="toggleDropdown('creditContainer', 'creditBtn')">
+        <span>📝 4. Credit / Customer Ledger Total: <b style="color:var(--primary-color);">₹ <span id="hdrCreditTotal">0.00</span></b></span>
+        <span class="arrow-icon">▼</span>
+    </div>
+    <div class="dropdown-content" id="creditContainer">
+        <div id="creditList"></div>
+        <button class="btn-add" onclick="addCredit()">➕ Add Credit Entry</button>
+    </div>
+
+    <!-- 5. Staff Cash Adjustment Dropdown -->
+    <div class="dropdown-toggle-btn" id="staffBtn" onclick="toggleDropdown('staffContainer', 'staffBtn')">
+        <span>🤝 5. Staff Cash Give/Take Net: <b style="color:var(--primary-color);"><span id="hdrStaffNet">₹ 0.00</span></b></span>
+        <span class="arrow-icon">▼</span>
+    </div>
+    <div class="dropdown-content" id="staffContainer">
+        <div id="staffList"></div>
+        <button class="btn-add" onclick="addStaffAdjustment()">➕ Add Staff Transaction</button>
+    </div>
+
+    <!-- Executive Summary Dashboard -->
+    <div class="result-box">
+        <div class="result-row">
+            <span>Total Volume Dispensed:</span>
+            <span class="val" id="totalLiters">0.00 L</span>
+        </div>
+        <div class="result-row">
+            <span>Expected Fuel Sales:</span>
+            <span class="val">₹ <span id="expectedAmount">0.00</span></span>
+        </div>
+        <div class="result-row">
+            <span>Online Payments Received:</span>
+            <span class="val">₹ <span id="summaryFonepay">0.00</span></span>
+        </div>
+        <div class="result-row">
+            <span>Credit Sales Authorized:</span>
+            <span class="val">₹ <span id="summaryCredit">0.00</span></span>
+        </div>
+        <div class="result-row">
+            <span>Total Handover Collection:</span>
+            <span class="val">₹ <span id="shiftCollection">0.00</span></span>
+        </div>
+        <div class="result-row final-result">
+            <span>Audit Status:</span>
+            <span id="finalStatus" class="surplus">₹ 0.00</span>
+        </div>
+    </div>
+</div>
+
+<script>
+let nozzleCount = 0;
+
+function toggleDropdown(containerId, btnId) {
+    const container = document.getElementById(containerId);
+    const btn = document.getElementById(btnId);
+    
+    container.classList.toggle('active');
+    btn.classList.toggle('active');
+}
+
+function addNozzle() {
+    nozzleCount++;
+    const container = document.getElementById('nozzlesList');
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.id = `nozzle-${nozzleCount}`;
+    div.innerHTML = `
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:center;">
+            <b style="font-size:13.5px; color:var(--text-main);">Fuel Nozzle #${nozzleCount}</b>
+            ${nozzleCount > 1 ? `<button class="btn-remove" style="padding: 3px 8px; font-size:12px;" onclick="removeElem('nozzle-${nozzleCount}')">Delete</button>` : ''}
+        </div>
+        <div class="flex-row">
+            <input type="text" placeholder="Nozzle Label (e.g., Petrol 01)">
+            <input type="number" class="n-rate" placeholder="Rate / Litre (₹)" oninput="calculateShift()">
+        </div>
+        <div class="flex-row">
+            <input type="number" class="n-old" placeholder="Opening Meter Reading" oninput="calculateShift()">
+            <input type="number" class="n-new" placeholder="Closing Meter Reading" oninput="calculateShift()">
+        </div>
+    `;
+    container.appendChild(div);
+    calculateShift();
+}
+
+function addFonepay() {
+    const container = document.getElementById('fonepayList');
+    const id = Date.now();
+    const div = document.createElement('div');
+    div.className = 'flex-row';
+    div.id = `fonepay-${id}`;
+    div.innerHTML = `
+        <input type="text" placeholder="Txn ID / Remark (Optional)">
+        <input type="number" class="fonepay-amt" placeholder="Amount (₹)" oninput="calculateShift()">
+        <button class="btn-remove" onclick="removeElem('fonepay-${id}')">✕</button>
+    `;
+    container.appendChild(div);
+    calculateShift();
+}
+
+function addCredit() {
+    const container = document.getElementById('creditList');
+    const id = Date.now();
+    const div = document.createElement('div');
+    div.className = 'flex-row';
+    div.id = `credit-${id}`;
+    div.innerHTML = `
+        <input type="text" placeholder="Customer / Organization Name">
+        <input type="number" class="credit-amt" placeholder="Amount (₹)" oninput="calculateShift()">
+        <button class="btn-remove" onclick="removeElem('credit-${id}')">✕</button>
+    `;
+    container.appendChild(div);
+    calculateShift();
+}
+
+function addStaffAdjustment() {
+    const container = document.getElementById('staffList');
+    const id = Date.now();
+    const div = document.createElement('div');
+    div.className = 'flex-row';
+    div.id = `staff-${id}`;
+    div.innerHTML = `
+        <input type="text" placeholder="Staff Name">
+        <select class="staff-type" onchange="calculateShift()">
+            <option value="given">📤 Gave Cash (-)</option>
+            <option value="received">📥 Received Cash (+)</option>
+        </select>
+        <input type="number" class="staff-amt" placeholder="Amount (₹)" oninput="calculateShift()">
+        <button class="btn-remove" onclick="removeElem('staff-${id}')">✕</button>
+    `;
+    container.appendChild(div);
+    calculateShift();
+}
+
+function removeElem(id) {
+    document.getElementById(id).remove();
+    calculateShift();
+}
+
+function calculateShift() {
+    let totalLiters = 0;
+    let expectedSale = 0;
+
+    // 1. Calculate Fuel Nozzle Meter Sales
+    document.querySelectorAll('#nozzlesList .card').forEach(card => {
+        let oldR = parseFloat(card.querySelector('.n-old').value) || 0;
+        let newR = parseFloat(card.querySelector('.n-new').value) || 0;
+        let rate = parseFloat(card.querySelector('.n-rate').value) || 0;
+
+        let liters = newR >= oldR ? newR - oldR : 0;
+        totalLiters += liters;
+        expectedSale += (liters * rate);
+    });
+
+    // 2. Online & Credit Collections
+    let totalFonepay = 0;
+    document.querySelectorAll('.fonepay-amt').forEach(input => {
+        totalFonepay += parseFloat(input.value) || 0;
+    });
+
+    let totalCredit = 0;
+    document.querySelectorAll('.credit-amt').forEach(input => {
+        totalCredit += parseFloat(input.value) || 0;
+    });
+
+    // 3. Staff Adjustment Logic
+    let netStaffAdjustment = 0;
+    document.querySelectorAll('#staffList .flex-row').forEach(row => {
+        let amt = parseFloat(row.querySelector('.staff-amt').value) || 0;
+        let type = row.querySelector('.staff-type').value;
+        if (type === 'given') {
+            netStaffAdjustment -= amt; // Deducted from cash collection
+        } else {
+            netStaffAdjustment += amt; // Added to cash collection
+        }
+    });
+
+    let openingBalance = parseFloat(document.getElementById('openingBalance').value) || 0;
+    let cashInHand = parseFloat(document.getElementById('cashInHand').value) || 0;
+    let cashOut = parseFloat(document.getElementById('cashOut').value) || 0;
+    let sapat = parseFloat(document.getElementById('sapat').value) || 0;
+
+    // Total Handover Collection (Physical Cash + Cash Deposited + Online + Credit + Advance + Staff Net)
+    let shiftCollection = cashInHand + cashOut + totalFonepay + totalCredit + sapat + netStaffAdjustment;
+    
+    // Total Expected Amount to Handover = Expected Fuel Sales + Opening Change Given
+    let totalTarget = expectedSale + openingBalance;
+    let difference = shiftCollection - totalTarget;
+
+    // Update Dropdown Header Summaries
+    document.getElementById('hdrFonepayTotal').innerText = totalFonepay.toFixed(2);
+    document.getElementById('hdrCreditTotal').innerText = totalCredit.toFixed(2);
+    
+    let staffHdr = document.getElementById('hdrStaffNet');
+    if (netStaffAdjustment < 0) {
+        staffHdr.innerText = "- ₹ " + Math.abs(netStaffAdjustment).toFixed(2);
+    } else if (netStaffAdjustment > 0) {
+        staffHdr.innerText = "+ ₹ " + netStaffAdjustment.toFixed(2);
+    } else {
+        staffHdr.innerText = "₹ 0.00";
+    }
+
+    // Update Audit Dashboard
+    document.getElementById('totalLiters').innerText = totalLiters.toFixed(2) + " L";
+    document.getElementById('expectedAmount').innerText = expectedSale.toFixed(2);
+    document.getElementById('summaryFonepay').innerText = totalFonepay.toFixed(2);
+    document.getElementById('summaryCredit').innerText = totalCredit.toFixed(2);
+    document.getElementById('shiftCollection').innerText = shiftCollection.toFixed(2);
+
+    let statusElement = document.getElementById('finalStatus');
+    if (difference > 0) {
+        statusElement.innerText = "+ ₹ " + difference.toFixed(2);
+        statusElement.className = "surplus";
+    } else if (difference < 0) {
+        statusElement.innerText = "- ₹ " + Math.abs(difference).toFixed(2);
+        statusElement.className = "shortage";
+    } else {
+        statusElement.innerText = "₹ 0.00";
+        statusElement.className = "surplus";
+    }
+}
+
+window.onload = function() {
+    addNozzle();
+    addFonepay();
+    addCredit();
+};
+</script>
+
+</body>
+</html>
