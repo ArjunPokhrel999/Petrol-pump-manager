@@ -23,118 +23,62 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            padding: 16px;
-            padding-bottom: 50px;
+            padding: 12px;
+            padding-bottom: 40px;
         }
 
         .container {
-            max-width: 680px;
+            max-width: 800px;
             margin: 0 auto;
             background: var(--card-bg);
-            padding: 24px;
+            padding: 16px;
             border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-            animation: fadeIn 0.4s ease-out;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
 
         .header-title {
             text-align: center;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 800;
             color: var(--text-main);
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            letter-spacing: -0.5px;
-        }
-
-        .header-title .bounce-icon {
-            display: inline-block;
-            animation: bounce 2s infinite ease-in-out;
+            gap: 8px;
         }
 
         .section-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
-            margin-top: 24px;
-            margin-bottom: 14px;
+            margin-top: 20px;
+            margin-bottom: 12px;
             color: var(--primary-color);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-        }
-
-        .dropdown-toggle-btn {
-            width: 100%;
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            padding: 14px 16px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-main);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            margin-top: 16px;
-            user-select: none;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .dropdown-toggle-btn:hover {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
-            transform: translateY(-1px);
-        }
-
-        .dropdown-toggle-btn .arrow-icon {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .dropdown-toggle-btn.active .arrow-icon {
-            transform: rotate(180deg);
-        }
-
-        .dropdown-content {
-            display: none;
-            padding-top: 12px;
-            opacity: 0;
-            transform: translateY(-8px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        .dropdown-content.active {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-            animation: slideDown 0.3s ease-out forwards;
         }
 
         .card {
             background: #f8fafc;
             border: 1px solid var(--border-color);
-            padding: 14px;
-            border-radius: 10px;
+            padding: 12px;
+            border-radius: 12px;
             margin-bottom: 12px;
-            animation: fadeIn 0.3s ease;
         }
 
         .flex-row {
             display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
         .flex-row:last-child {
@@ -143,14 +87,13 @@
 
         .flex-row input, .flex-row select, .single-input input {
             flex: 1;
-            padding: 11px 14px;
+            padding: 12px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             font-size: 14px;
             min-width: 0;
             background: #ffffff;
             color: var(--text-main);
-            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .flex-row input:focus, .flex-row select:focus, .single-input input:focus {
@@ -163,72 +106,91 @@
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 11px 16px;
+            padding: 12px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 13.5px;
-            margin-bottom: 10px;
+            font-size: 14px;
+            margin-bottom: 8px;
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            transition: all 0.2s ease;
-        }
-
-        .btn-add:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
         }
 
         .btn-remove {
             background: #fee2e2;
             color: var(--danger-color);
             border: 1px solid #fca5a5;
-            padding: 0 14px;
+            padding: 0 12px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
-            transition: all 0.2s ease;
         }
 
-        .btn-remove:hover {
-            background: var(--danger-color);
-            color: #ffffff;
+        .dropdown-toggle-btn {
+            width: 100%;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .dropdown-toggle-btn .arrow-icon {
+            transition: transform 0.3s;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .dropdown-toggle-btn.active .arrow-icon {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-content {
+            display: none;
+            padding-top: 10px;
+        }
+
+        .dropdown-content.active {
+            display: block;
         }
 
         .single-input {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 6px;
             margin-bottom: 12px;
-            gap: 12px;
         }
 
         .single-input label {
-            flex: 1;
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 13px;
+            font-weight: 600;
             color: var(--text-muted);
         }
 
         .result-box {
-            margin-top: 28px;
+            margin-top: 24px;
             background: linear-gradient(145deg, #1e293b, #0f172a);
             color: #ffffff;
-            padding: 20px;
+            padding: 16px;
             border-radius: 14px;
-            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15);
         }
 
         .result-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 12px;
-            font-size: 14.5px;
+            margin-bottom: 10px;
+            font-size: 14px;
             color: #94a3b8;
         }
 
@@ -238,9 +200,9 @@
         }
 
         .final-result {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
-            padding-top: 14px;
+            padding-top: 12px;
             border-top: 1px solid #334155;
             margin-top: 8px;
             display: flex;
@@ -248,29 +210,30 @@
             align-items: center;
         }
 
-        .surplus { 
-            color: #34d399 !important; 
-            text-shadow: 0 0 10px rgba(52, 211, 153, 0.2);
-        }
-        
-        .shortage { 
-            color: #f87171 !important; 
-            text-shadow: 0 0 10px rgba(248, 113, 113, 0.2);
+        .surplus { color: #34d399 !important; }
+        .shortage { color: #f87171 !important; }
+
+        .btn-new-shift {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 15px;
+            width: 100%;
+            margin-top: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+            transition: background 0.2s;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
+        .btn-new-shift:active {
+            background: #b91c1c;
         }
     </style>
 </head>
@@ -278,7 +241,7 @@
 
 <div class="container">
     <div class="header-title">
-        <span class="bounce-icon">⛽</span> Shift Audit & Cash Settlement
+        <span>⛽</span> Shift Audit & Cash Settlement
     </div>
 
     <!-- 1. Meter Sales -->
@@ -362,6 +325,9 @@
             <span id="finalStatus" class="surplus">₹ 0.00</span>
         </div>
     </div>
+
+    <!-- Shift Change / Reset Button -->
+    <button class="btn-new-shift" onclick="startNewShift()">🔄 Start New Shift (Clear Storage)</button>
 </div>
 
 <script>
@@ -370,78 +336,81 @@ let nozzleCount = 0;
 function toggleDropdown(containerId, btnId) {
     const container = document.getElementById(containerId);
     const btn = document.getElementById(btnId);
-    
     container.classList.toggle('active');
     btn.classList.toggle('active');
 }
 
-function addNozzle() {
+function addNozzle(data = null) {
     nozzleCount++;
     const container = document.getElementById('nozzlesList');
     const div = document.createElement('div');
     div.className = 'card';
     div.id = `nozzle-${nozzleCount}`;
     div.innerHTML = `
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:center;">
-            <b style="font-size:13.5px; color:var(--text-main);">Fuel Nozzle #${nozzleCount}</b>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
+            <b style="font-size:13px; color:var(--text-main);">Fuel Nozzle #${nozzleCount}</b>
             ${nozzleCount > 1 ? `<button class="btn-remove" style="padding: 3px 8px; font-size:12px;" onclick="removeElem('nozzle-${nozzleCount}')">Delete</button>` : ''}
         </div>
         <div class="flex-row">
-            <input type="text" placeholder="Nozzle Label (e.g., Petrol 01)">
-            <input type="number" class="n-rate" placeholder="Rate / Litre (₹)" oninput="calculateShift()">
+            <input type="text" class="n-name" placeholder="Label (e.g. Petrol 01)" value="${data ? data.name : ''}" oninput="calculateShift()">
+            <input type="number" class="n-rate" placeholder="Rate / L (₹)" value="${data ? data.rate : ''}" oninput="calculateShift()">
         </div>
         <div class="flex-row">
-            <input type="number" class="n-old" placeholder="Opening Meter Reading" oninput="calculateShift()">
-            <input type="number" class="n-new" placeholder="Closing Meter Reading" oninput="calculateShift()">
+            <input type="number" class="n-old" placeholder="Opening Reading" value="${data ? data.oldR : ''}" oninput="calculateShift()">
+            <input type="number" class="n-new" placeholder="Closing Reading" value="${data ? data.newR : ''}" oninput="calculateShift()">
         </div>
     `;
     container.appendChild(div);
     calculateShift();
 }
 
-function addFonepay() {
+function addFonepay(data = null) {
     const container = document.getElementById('fonepayList');
-    const id = Date.now();
+    const id = Date.now() + Math.random();
     const div = document.createElement('div');
     div.className = 'flex-row';
     div.id = `fonepay-${id}`;
     div.innerHTML = `
-        <input type="text" placeholder="Txn ID / Remark (Optional)">
-        <input type="number" class="fonepay-amt" placeholder="Amount (₹)" oninput="calculateShift()">
+        <input type="text" class="fonepay-remark" placeholder="Remark / Txn ID" value="${data ? data.remark : ''}" oninput="calculateShift()">
+        <input type="number" class="fonepay-amt" placeholder="Amount (₹)" value="${data ? data.amt : ''}" oninput="calculateShift()">
         <button class="btn-remove" onclick="removeElem('fonepay-${id}')">✕</button>
     `;
     container.appendChild(div);
     calculateShift();
 }
 
-function addCredit() {
+function addCredit(data = null) {
     const container = document.getElementById('creditList');
-    const id = Date.now();
+    const id = Date.now() + Math.random();
     const div = document.createElement('div');
     div.className = 'flex-row';
     div.id = `credit-${id}`;
     div.innerHTML = `
-        <input type="text" placeholder="Customer / Organization Name">
-        <input type="number" class="credit-amt" placeholder="Amount (₹)" oninput="calculateShift()">
+        <input type="text" class="credit-name" placeholder="Customer Name" value="${data ? data.name : ''}" oninput="calculateShift()">
+        <input type="number" class="credit-amt" placeholder="Amount (₹)" value="${data ? data.amt : ''}" oninput="calculateShift()">
         <button class="btn-remove" onclick="removeElem('credit-${id}')">✕</button>
     `;
     container.appendChild(div);
     calculateShift();
 }
 
-function addStaffAdjustment() {
+function addStaffAdjustment(data = null) {
     const container = document.getElementById('staffList');
-    const id = Date.now();
+    const id = Date.now() + Math.random();
     const div = document.createElement('div');
     div.className = 'flex-row';
     div.id = `staff-${id}`;
+    
+    const typeGiven = data && data.type === 'given' ? 'selected' : '';
+    const typeReceived = data && data.type === 'received' ? 'selected' : '';
+
     div.innerHTML = `
-        <input type="text" placeholder="Staff Name">
+        <input type="text" class="staff-name" placeholder="Staff Name" value="${data ? data.name : ''}" oninput="calculateShift()">
         <select class="staff-type" onchange="calculateShift()">
-            <option value="given">📤 Gave Cash (-)</option>
-            <option value="received">📥 Received Cash (+)</option>
+            <option value="given" ${typeGiven}>📤 Gave (-)</option>
+            <option value="received" ${typeReceived}>📥 Received (+)</option>
         </select>
-        <input type="number" class="staff-amt" placeholder="Amount (₹)" oninput="calculateShift()">
+        <input type="number" class="staff-amt" placeholder="Amount (₹)" value="${data ? data.amt : ''}" oninput="calculateShift()">
         <button class="btn-remove" onclick="removeElem('staff-${id}')">✕</button>
     `;
     container.appendChild(div);
@@ -457,8 +426,9 @@ function calculateShift() {
     let totalLiters = 0;
     let expectedSale = 0;
 
-    // 1. Calculate Fuel Nozzle Meter Sales
+    let nozzlesData = [];
     document.querySelectorAll('#nozzlesList .card').forEach(card => {
+        let name = card.querySelector('.n-name').value;
         let oldR = parseFloat(card.querySelector('.n-old').value) || 0;
         let newR = parseFloat(card.querySelector('.n-new').value) || 0;
         let rate = parseFloat(card.querySelector('.n-rate').value) || 0;
@@ -466,29 +436,42 @@ function calculateShift() {
         let liters = newR >= oldR ? newR - oldR : 0;
         totalLiters += liters;
         expectedSale += (liters * rate);
+
+        nozzlesData.push({ name, oldR: card.querySelector('.n-old').value, newR: card.querySelector('.n-new').value, rate: card.querySelector('.n-rate').value });
     });
 
-    // 2. Online & Credit Collections
     let totalFonepay = 0;
-    document.querySelectorAll('.fonepay-amt').forEach(input => {
-        totalFonepay += parseFloat(input.value) || 0;
+    let fonepayData = [];
+    document.querySelectorAll('#fonepayList .flex-row').forEach(row => {
+        let remark = row.querySelector('.fonepay-remark').value;
+        let amtStr = row.querySelector('.fonepay-amt').value;
+        let amt = parseFloat(amtStr) || 0;
+        totalFonepay += amt;
+        fonepayData.push({ remark, amt: amtStr });
     });
 
     let totalCredit = 0;
-    document.querySelectorAll('.credit-amt').forEach(input => {
-        totalCredit += parseFloat(input.value) || 0;
+    let creditData = [];
+    document.querySelectorAll('#creditList .flex-row').forEach(row => {
+        let name = row.querySelector('.credit-name').value;
+        let amtStr = row.querySelector('.credit-amt').value;
+        let amt = parseFloat(amtStr) || 0;
+        totalCredit += amt;
+        creditData.push({ name, amt: amtStr });
     });
 
-    // 3. Staff Adjustment Logic
     let netStaffAdjustment = 0;
+    let staffData = [];
     document.querySelectorAll('#staffList .flex-row').forEach(row => {
-        let amt = parseFloat(row.querySelector('.staff-amt').value) || 0;
+        let name = row.querySelector('.staff-name').value;
         let type = row.querySelector('.staff-type').value;
-        if (type === 'given') {
-            netStaffAdjustment -= amt; // Deducted from cash collection
-        } else {
-            netStaffAdjustment += amt; // Added to cash collection
-        }
+        let amtStr = row.querySelector('.staff-amt').value;
+        let amt = parseFloat(amtStr) || 0;
+
+        if (type === 'given') netStaffAdjustment -= amt;
+        else netStaffAdjustment += amt;
+
+        staffData.push({ name, type, amt: amtStr });
     });
 
     let openingBalance = parseFloat(document.getElementById('openingBalance').value) || 0;
@@ -496,27 +479,18 @@ function calculateShift() {
     let cashOut = parseFloat(document.getElementById('cashOut').value) || 0;
     let sapat = parseFloat(document.getElementById('sapat').value) || 0;
 
-    // Total Handover Collection (Physical Cash + Cash Deposited + Online + Credit + Advance + Staff Net)
     let shiftCollection = cashInHand + cashOut + totalFonepay + totalCredit + sapat + netStaffAdjustment;
-    
-    // Total Expected Amount to Handover = Expected Fuel Sales + Opening Change Given
     let totalTarget = expectedSale + openingBalance;
     let difference = shiftCollection - totalTarget;
 
-    // Update Dropdown Header Summaries
     document.getElementById('hdrFonepayTotal').innerText = totalFonepay.toFixed(2);
     document.getElementById('hdrCreditTotal').innerText = totalCredit.toFixed(2);
     
     let staffHdr = document.getElementById('hdrStaffNet');
-    if (netStaffAdjustment < 0) {
-        staffHdr.innerText = "- ₹ " + Math.abs(netStaffAdjustment).toFixed(2);
-    } else if (netStaffAdjustment > 0) {
-        staffHdr.innerText = "+ ₹ " + netStaffAdjustment.toFixed(2);
-    } else {
-        staffHdr.innerText = "₹ 0.00";
-    }
+    if (netStaffAdjustment < 0) staffHdr.innerText = "- ₹ " + Math.abs(netStaffAdjustment).toFixed(2);
+    else if (netStaffAdjustment > 0) staffHdr.innerText = "+ ₹ " + netStaffAdjustment.toFixed(2);
+    else staffHdr.innerText = "₹ 0.00";
 
-    // Update Audit Dashboard
     document.getElementById('totalLiters').innerText = totalLiters.toFixed(2) + " L";
     document.getElementById('expectedAmount').innerText = expectedSale.toFixed(2);
     document.getElementById('summaryFonepay').innerText = totalFonepay.toFixed(2);
@@ -534,12 +508,66 @@ function calculateShift() {
         statusElement.innerText = "₹ 0.00";
         statusElement.className = "surplus";
     }
+
+    const state = {
+        openingBalance: document.getElementById('openingBalance').value,
+        cashInHand: document.getElementById('cashInHand').value,
+        cashOut: document.getElementById('cashOut').value,
+        sapat: document.getElementById('sapat').value,
+        nozzles: nozzlesData,
+        fonepay: fonepayData,
+        credit: creditData,
+        staff: staffData
+    };
+    localStorage.setItem('petrol_pump_shift_data', JSON.stringify(state));
+}
+
+function loadSavedData() {
+    const saved = localStorage.getItem('petrol_pump_shift_data');
+    if (saved) {
+        const state = JSON.parse(saved);
+        document.getElementById('openingBalance').value = state.openingBalance || '';
+        document.getElementById('cashInHand').value = state.cashInHand || '';
+        document.getElementById('cashOut').value = state.cashOut || '';
+        document.getElementById('sapat').value = state.sapat || '';
+
+        document.getElementById('nozzlesList').innerHTML = '';
+        nozzleCount = 0;
+        if (state.nozzles && state.nozzles.length > 0) {
+            state.nozzles.forEach(n => addNozzle(n));
+        } else {
+            addNozzle();
+        }
+
+        document.getElementById('fonepayList').innerHTML = '';
+        if (state.fonepay && state.fonepay.length > 0) {
+            state.fonepay.forEach(f => addFonepay(f));
+        }
+
+        document.getElementById('creditList').innerHTML = '';
+        if (state.credit && state.credit.length > 0) {
+            state.credit.forEach(c => addCredit(c));
+        }
+
+        document.getElementById('staffList').innerHTML = '';
+        if (state.staff && state.staff.length > 0) {
+            state.staff.forEach(s => addStaffAdjustment(s));
+        }
+    } else {
+        addNozzle();
+    }
+    calculateShift();
+}
+
+function startNewShift() {
+    if (confirm("Kya aap naya shift start karna chahte hain? Pichla poora data clear ho jayega.")) {
+        localStorage.removeItem('petrol_pump_shift_data');
+        location.reload();
+    }
 }
 
 window.onload = function() {
-    addNozzle();
-    addFonepay();
-    addCredit();
+    loadSavedData();
 };
 </script>
 
