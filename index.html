@@ -2,25 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Petrol Pump Shift Tracker</title>
+    
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         :root {
             --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --bg-color: #f1f5f9;
+            --bg-color: #f8fafc;
             --card-bg: #ffffff;
             --text-main: #0f172a;
             --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --success-color: #10b981;
-            --danger-color: #ef4444;
+            --border-color: #cbd5e1;
             --accent-glow: rgba(37, 99, 235, 0.15);
         }
 
         * {
             box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
@@ -29,56 +31,99 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            padding: 12px;
-            padding-bottom: 40px;
+            padding: 8px;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 600px;
             margin: 0 auto;
-            background: var(--card-bg);
-            padding: 16px;
-            border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            background: #ffffff;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
 
         .header-title {
-            text-align: center;
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 800;
             color: var(--text-main);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
         }
 
-        .section-title {
-            font-size: 14px;
-            font-weight: 700;
-            margin-top: 20px;
-            margin-bottom: 12px;
+        .header-time {
+            font-size: 12px;
             color: var(--primary-color);
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        /* Collapsible Section Accordion Header */
+        .section-header {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-main);
+            background: #ffffff;
+            padding: 10px 12px;
+            margin-top: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            gap: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .section-header:hover {
+            background: #f1f5f9;
+        }
+
+        .section-header .toggle-icon {
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .section-header.closed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+
+        .section-header .item-count-badge {
+            background: var(--primary-color);
+            color: #ffffff;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 6px;
+        }
+
+        /* Section Content Box */
+        .section-body {
+            display: block;
+            padding-top: 6px;
+        }
+
+        .section-body.closed {
+            display: none;
         }
 
         .card {
-            background: #f8fafc;
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
-            padding: 12px;
-            border-radius: 12px;
-            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 6px;
         }
 
         .flex-row {
             display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
+            gap: 6px;
+            margin-bottom: 4px;
+            align-items: center;
         }
 
         .flex-row:last-child {
@@ -87,10 +132,10 @@
 
         .flex-row input, .flex-row select, .single-input input {
             flex: 1;
-            padding: 12px;
+            padding: 8px 10px;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 6px;
+            font-size: 13px;
             min-width: 0;
             background: #ffffff;
             color: var(--text-main);
@@ -99,98 +144,73 @@
         .flex-row input:focus, .flex-row select:focus, .single-input input:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px var(--accent-glow);
+            box-shadow: 0 0 0 2px var(--accent-glow);
         }
 
         .btn-add {
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: 6px;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 12px;
+            margin-bottom: 6px;
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 4px;
         }
 
         .btn-remove {
             background: #fee2e2;
-            color: var(--danger-color);
+            color: #ef4444;
             border: 1px solid #fca5a5;
-            padding: 0 12px;
-            border-radius: 8px;
+            padding: 8px 10px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 14px;
-        }
-
-        .dropdown-toggle-btn {
-            width: 100%;
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-main);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            margin-top: 12px;
-        }
-
-        .dropdown-toggle-btn .arrow-icon {
-            transition: transform 0.3s;
             font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .dropdown-toggle-btn.active .arrow-icon {
-            transform: rotate(180deg);
-        }
-
-        .dropdown-content {
-            display: none;
-            padding-top: 10px;
-        }
-
-        .dropdown-content.active {
-            display: block;
         }
 
         .single-input {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin-bottom: 12px;
+            gap: 2px;
+            margin-bottom: 6px;
         }
 
         .single-input label {
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 700;
             color: var(--text-muted);
         }
 
+        .time-badge {
+            font-size: 10px;
+            color: var(--text-muted);
+            background: #f1f5f9;
+            padding: 4px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
         .result-box {
-            margin-top: 24px;
             background: linear-gradient(145deg, #1e293b, #0f172a);
             color: #ffffff;
-            padding: 16px;
-            border-radius: 14px;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 10px;
+            margin-bottom: 8px;
         }
 
         .result-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 14px;
+            margin-bottom: 6px;
+            font-size: 12px;
             color: #94a3b8;
         }
 
@@ -200,11 +220,11 @@
         }
 
         .final-result {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 700;
-            padding-top: 12px;
+            padding-top: 8px;
             border-top: 1px solid #334155;
-            margin-top: 8px;
+            margin-top: 4px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -213,132 +233,280 @@
         .surplus { color: #34d399 !important; }
         .shortage { color: #f87171 !important; }
 
-        .btn-new-shift {
-            background: #dc2626;
+        .btn-download-pdf {
+            background: #16a34a;
             color: white;
             border: none;
-            padding: 14px;
-            border-radius: 10px;
+            padding: 12px;
+            border-radius: 8px;
             font-weight: 700;
-            font-size: 15px;
+            font-size: 14px;
             width: 100%;
-            margin-top: 20px;
+            margin-top: 10px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
-            transition: background 0.2s;
+            gap: 6px;
         }
 
-        .btn-new-shift:active {
-            background: #b91c1c;
+        .btn-new-shift {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            width: 100%;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .report-table th, .report-table td {
+            padding: 6px 8px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .report-table th {
+            background-color: #f1f5f9;
+            font-weight: 700;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header-title">
-        <span>⛽</span> Shift Audit & Cash Settlement
+    <div class="header">
+        <div class="header-title">⛽ Petrol Pump Shift Tracker</div>
+        <div class="header-time" id="nepaliClock">Loading Nepali Time...</div>
     </div>
 
-    <!-- 1. Meter Sales -->
-    <div class="section-title">📊 1. Fuel Nozzle Readings</div>
-    <div id="nozzlesList"></div>
-    <button class="btn-add" onclick="addNozzle()">➕ Add Fuel Nozzle</button>
-
-    <!-- 2. Cash Management -->
-    <div class="section-title">💵 2. Shift Cash Counter</div>
-    <div class="single-input">
-        <label>Opening Change Given (+):</label>
-        <input type="number" id="openingBalance" placeholder="0.00" oninput="calculateShift()">
+    <!-- 1. Meter Readings Section -->
+    <div class="section-header" onclick="toggleSection('sec-nozzle')">
+        <span>⛽ 1. Fuel Nozzle Readings <span class="item-count-badge" id="count-nozzle">0</span></span>
+        <span class="toggle-icon" id="icon-sec-nozzle">▼</span>
     </div>
-    <div class="single-input">
-        <label>Physical Cash In Hand:</label>
-        <input type="number" id="cashInHand" placeholder="0.00" oninput="calculateShift()">
-    </div>
-    <div class="single-input">
-        <label>Cash Deposited to Safe/Counter:</label>
-        <input type="number" id="cashOut" placeholder="0.00" oninput="calculateShift()">
-    </div>
-    <div class="single-input">
-        <label>Salary Advance / Expense:</label>
-        <input type="number" id="sapat" placeholder="0.00" oninput="calculateShift()">
+    <div class="section-body" id="sec-nozzle">
+        <div id="nozzlesList"></div>
+        <button class="btn-add" onclick="addNozzle()">➕ Add Nozzle</button>
     </div>
 
-    <!-- 3. Online Payments Dropdown -->
-    <div class="dropdown-toggle-btn" id="fonepayBtn" onclick="toggleDropdown('fonepayContainer', 'fonepayBtn')">
-        <span>📲 3. Fonepay / Online Total: <b style="color:var(--primary-color);">₹ <span id="hdrFonepayTotal">0.00</span></b></span>
-        <span class="arrow-icon">▼</span>
+    <!-- 2. Purchase Return Section -->
+    <div class="section-header closed" onclick="toggleSection('sec-return')">
+        <span>↩️ 2. Purchase Return (Fuel Return) <span class="item-count-badge" id="count-return">0</span></span>
+        <span class="toggle-icon" id="icon-sec-return">▼</span>
     </div>
-    <div class="dropdown-content" id="fonepayContainer">
+    <div class="section-body closed" id="sec-return">
+        <div id="purchaseReturnList"></div>
+        <button class="btn-add" onclick="addPurchaseReturn()">➕ Add Purchase Return Entry</button>
+    </div>
+
+    <!-- 3. Opening Cash & Expenses -->
+    <div class="section-header" onclick="toggleSection('sec-opening')">
+        <span>💵 3. Opening Cash & Salary Advance</span>
+        <span class="toggle-icon" id="icon-sec-opening">▼</span>
+    </div>
+    <div class="section-body" id="sec-opening">
+        <div class="card">
+            <div class="flex-row">
+                <div class="single-input" style="flex:1;">
+                    <label>Opening Change (+):</label>
+                    <input type="number" id="openingBalance" placeholder="0.00" oninput="calculateShift()">
+                </div>
+                <div class="single-input" style="flex:1;">
+                    <label>Salary Advance / Expense (-):</label>
+                    <input type="number" id="sapat" placeholder="0.00" oninput="calculateShift()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Cash In Hand (Counter Logs) -->
+    <div class="section-header closed" onclick="toggleSection('sec-cashin')">
+        <span>💰 4. Cash In Hand (Counter Logs) <span class="item-count-badge" id="count-cashin">0</span></span>
+        <span class="toggle-icon" id="icon-sec-cashin">▼</span>
+    </div>
+    <div class="section-body closed" id="sec-cashin">
+        <div id="cashInHandList"></div>
+        <button class="btn-add" onclick="addCashInHand()">➕ Add Cash In Hand Entry</button>
+    </div>
+
+    <!-- 5. Cash Handover / Safe Deposit -->
+    <div class="section-header closed" onclick="toggleSection('sec-cashout')">
+        <span>🏦 5. Cash Handover / Safe Deposit <span class="item-count-badge" id="count-cashout">0</span></span>
+        <span class="toggle-icon" id="icon-sec-cashout">▼</span>
+    </div>
+    <div class="section-body closed" id="sec-cashout">
+        <div id="cashOutList"></div>
+        <button class="btn-add" onclick="addCashOut()">➕ Add Cash Handover Entry</button>
+    </div>
+
+    <!-- 6. Fonepay & Digital Transactions -->
+    <div class="section-header closed" onclick="toggleSection('sec-fonepay')">
+        <span>📱 6. Fonepay & Digital <span class="item-count-badge" id="count-fonepay">0</span></span>
+        <span class="toggle-icon" id="icon-sec-fonepay">▼</span>
+    </div>
+    <div class="section-body closed" id="sec-fonepay">
         <div id="fonepayList"></div>
-        <button class="btn-add" onclick="addFonepay()">➕ Add Online Transaction</button>
+        <button class="btn-add" onclick="addFonepay()">➕ Add Digital Entry</button>
     </div>
 
-    <!-- 4. Credit Sales Dropdown -->
-    <div class="dropdown-toggle-btn" id="creditBtn" onclick="toggleDropdown('creditContainer', 'creditBtn')">
-        <span>📝 4. Credit / Customer Ledger Total: <b style="color:var(--primary-color);">₹ <span id="hdrCreditTotal">0.00</span></b></span>
-        <span class="arrow-icon">▼</span>
+    <!-- 7. Ledger & Credit Sales -->
+    <div class="section-header closed" onclick="toggleSection('sec-credit')">
+        <span>📒 7. Ledger & Credit Sales <span class="item-count-badge" id="count-credit">0</span></span>
+        <span class="toggle-icon" id="icon-sec-credit">▼</span>
     </div>
-    <div class="dropdown-content" id="creditContainer">
+    <div class="section-body closed" id="sec-credit">
         <div id="creditList"></div>
         <button class="btn-add" onclick="addCredit()">➕ Add Credit Entry</button>
     </div>
 
-    <!-- 5. Staff Cash Adjustment Dropdown -->
-    <div class="dropdown-toggle-btn" id="staffBtn" onclick="toggleDropdown('staffContainer', 'staffBtn')">
-        <span>🤝 5. Staff Cash Give/Take Net: <b style="color:var(--primary-color);"><span id="hdrStaffNet">₹ 0.00</span></b></span>
-        <span class="arrow-icon">▼</span>
+    <!-- 8. Staff Adjustments -->
+    <div class="section-header closed" onclick="toggleSection('sec-staff')">
+        <span>👥 8. Staff Adjustments <span class="item-count-badge" id="count-staff">0</span></span>
+        <span class="toggle-icon" id="icon-sec-staff">▼</span>
     </div>
-    <div class="dropdown-content" id="staffContainer">
+    <div class="section-body closed" id="sec-staff">
         <div id="staffList"></div>
         <button class="btn-add" onclick="addStaffAdjustment()">➕ Add Staff Transaction</button>
     </div>
 
-    <!-- Executive Summary Dashboard -->
-    <div class="result-box">
-        <div class="result-row">
-            <span>Total Volume Dispensed:</span>
-            <span class="val" id="totalLiters">0.00 L</span>
-        </div>
-        <div class="result-row">
-            <span>Expected Fuel Sales:</span>
-            <span class="val">₹ <span id="expectedAmount">0.00</span></span>
-        </div>
-        <div class="result-row">
-            <span>Online Payments Received:</span>
-            <span class="val">₹ <span id="summaryFonepay">0.00</span></span>
-        </div>
-        <div class="result-row">
-            <span>Credit Sales Authorized:</span>
-            <span class="val">₹ <span id="summaryCredit">0.00</span></span>
-        </div>
-        <div class="result-row">
-            <span>Total Handover Collection:</span>
-            <span class="val">₹ <span id="shiftCollection">0.00</span></span>
-        </div>
-        <div class="result-row final-result">
-            <span>Audit Status:</span>
-            <span id="finalStatus" class="surplus">₹ 0.00</span>
-        </div>
+    <!-- SUMMARY & EXPORT SECTION -->
+    <div class="section-header" onclick="toggleSection('sec-summary')">
+        <span>📊 Fuel Sales Summary & Final Audit</span>
+        <span class="toggle-icon" id="icon-sec-summary">▼</span>
     </div>
+    <div class="section-body" id="sec-summary">
+        <div class="card" style="margin-top: 6px;">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Fuel Type</th>
+                        <th>Volume (Ltr)</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>Petrol</b></td>
+                        <td id="petrolLiters">0.00 L</td>
+                        <td>Rs. <span id="petrolAmount">0.00</span></td>
+                    </tr>
+                    <tr>
+                        <td><b>Diesel</b></td>
+                        <td id="dieselLiters">0.00 L</td>
+                        <td>Rs. <span id="dieselAmount">0.00</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-    <!-- Shift Change / Reset Button -->
-    <button class="btn-new-shift" onclick="startNewShift()">🔄 Start New Shift (Clear Storage)</button>
+        <div class="result-box">
+            <div class="result-row">
+                <span>Total Volume Dispensed:</span>
+                <span class="val" id="totalLiters">0.00 L</span>
+            </div>
+            <div class="result-row">
+                <span>Purchase Return Deducted:</span>
+                <span class="val">Rs. <span id="returnAmount">0.00</span></span>
+            </div>
+            <div class="result-row">
+                <span>Expected Sales Target:</span>
+                <span class="val">Rs. <span id="expectedAmount">0.00</span></span>
+            </div>
+            <div class="result-row">
+                <span>Total Actual Collection:</span>
+                <span class="val">Rs. <span id="shiftCollection">0.00</span></span>
+            </div>
+            <div class="result-row final-result">
+                <span>Audit Status:</span>
+                <span id="finalStatus" class="surplus">Rs. 0.00</span>
+            </div>
+            <div class="result-row" style="margin-top: 6px; font-size:11px; opacity:0.8;">
+                <span>Audit Note:</span>
+                <span id="auditNote" style="color:#ffffff;">Balanced</span>
+            </div>
+        </div>
+        
+        <button class="btn-download-pdf" onclick="generatePDF()">📥 Download Shift Audit PDF</button>
+        <button class="btn-new-shift" onclick="startNewShift()">🔄 Clear Shift & Reset Data</button>
+    </div>
 </div>
 
 <script>
 let nozzleCount = 0;
+let autoCloseTimers = {};
 
-function toggleDropdown(containerId, btnId) {
-    const container = document.getElementById(containerId);
-    const btn = document.getElementById(btnId);
-    container.classList.toggle('active');
-    btn.classList.toggle('active');
+// Toggle Section Open/Close
+function toggleSection(sectionId) {
+    const body = document.getElementById(sectionId);
+    const header = body.previousElementSibling;
+    
+    if (body.classList.contains('closed')) {
+        body.classList.remove('closed');
+        header.classList.remove('closed');
+    } else {
+        body.classList.add('closed');
+        header.classList.add('closed');
+    }
 }
+
+// Open section and schedule auto-close after 10 Seconds
+function openAndScheduleAutoClose(sectionId) {
+    const body = document.getElementById(sectionId);
+    const header = body.previousElementSibling;
+
+    // Open Section
+    body.classList.remove('closed');
+    header.classList.remove('closed');
+
+    // Clear existing timer if any
+    if (autoCloseTimers[sectionId]) {
+        clearTimeout(autoCloseTimers[sectionId]);
+    }
+
+    // Set 10-Second Auto Close Timer
+    autoCloseTimers[sectionId] = setTimeout(() => {
+        body.classList.add('closed');
+        header.classList.add('closed');
+    }, 10000);
+}
+
+function updateNepaliClock() {
+    const now = new Date();
+    const options = { 
+        timeZone: 'Asia/Kathmandu', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit',
+        hour12: true 
+    };
+    const timeString = new Intl.DateTimeFormat('en-US', options).format(now);
+    document.getElementById('nepaliClock').innerText = `NPT: ${timeString}`;
+}
+
+function getFormattedTime() {
+    const now = new Date();
+    return new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Kathmandu',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    }).format(now);
+}
+
+setInterval(updateNepaliClock, 1000);
 
 function addNozzle(data = null) {
     nozzleCount++;
@@ -346,14 +514,20 @@ function addNozzle(data = null) {
     const div = document.createElement('div');
     div.className = 'card';
     div.id = `nozzle-${nozzleCount}`;
+
+    let selectedFuel = data ? data.type : (nozzleCount % 2 === 0 ? 'Diesel' : 'Petrol');
+
     div.innerHTML = `
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
-            <b style="font-size:13px; color:var(--text-main);">Fuel Nozzle #${nozzleCount}</b>
-            ${nozzleCount > 1 ? `<button class="btn-remove" style="padding: 3px 8px; font-size:12px;" onclick="removeElem('nozzle-${nozzleCount}')">Delete</button>` : ''}
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+            <b style="font-size:12px; color:var(--text-main);">Nozzle #${nozzleCount}</b>
+            ${nozzleCount > 1 ? `<button class="btn-remove" style="padding: 2px 6px; font-size:11px;" onclick="removeElem('nozzle-${nozzleCount}')">Delete</button>` : ''}
         </div>
         <div class="flex-row">
-            <input type="text" class="n-name" placeholder="Label (e.g. Petrol 01)" value="${data ? data.name : ''}" oninput="calculateShift()">
-            <input type="number" class="n-rate" placeholder="Rate / L (₹)" value="${data ? data.rate : ''}" oninput="calculateShift()">
+            <select class="n-type" onchange="calculateShift()">
+                <option value="Petrol" ${selectedFuel === 'Petrol' ? 'selected' : ''}>Petrol</option>
+                <option value="Diesel" ${selectedFuel === 'Diesel' ? 'selected' : ''}>Diesel</option>
+            </select>
+            <input type="number" class="n-rate" placeholder="Rate / L (Rs)" value="${data ? data.rate : ''}" oninput="calculateShift()">
         </div>
         <div class="flex-row">
             <input type="number" class="n-old" placeholder="Opening Reading" value="${data ? data.oldR : ''}" oninput="calculateShift()">
@@ -361,6 +535,70 @@ function addNozzle(data = null) {
         </div>
     `;
     container.appendChild(div);
+    if (!data) openAndScheduleAutoClose('sec-nozzle');
+    calculateShift();
+}
+
+function addPurchaseReturn(data = null) {
+    const container = document.getElementById('purchaseReturnList');
+    const id = Date.now() + Math.random();
+    const div = document.createElement('div');
+    div.className = 'flex-row';
+    div.id = `return-${id}`;
+
+    let selectedType = data ? data.type : 'Petrol';
+
+    div.innerHTML = `
+        <select class="return-type" onchange="calculateShift()">
+            <option value="Petrol" ${selectedType === 'Petrol' ? 'selected' : ''}>Petrol</option>
+            <option value="Diesel" ${selectedType === 'Diesel' ? 'selected' : ''}>Diesel</option>
+        </select>
+        <input type="number" class="return-liters" placeholder="Liters" value="${data ? data.liters : ''}" oninput="calculateShift()">
+        <input type="number" class="return-rate" placeholder="Rate / L" value="${data ? data.rate : ''}" oninput="calculateShift()">
+        <button class="btn-remove" onclick="removeElem('return-${id}')">✕</button>
+    `;
+    container.appendChild(div);
+    if (!data) openAndScheduleAutoClose('sec-return');
+    calculateShift();
+}
+
+function addCashInHand(data = null) {
+    const container = document.getElementById('cashInHandList');
+    const id = Date.now() + Math.random();
+    const div = document.createElement('div');
+    div.className = 'flex-row';
+    div.id = `cashin-${id}`;
+    const timestamp = data ? data.time : getFormattedTime();
+
+    div.innerHTML = `
+        <span class="time-badge">${timestamp}</span>
+        <input type="text" class="cashin-remark" placeholder="Remark / Counter" value="${data ? data.remark : ''}" oninput="calculateShift()">
+        <input type="number" class="cashin-amt" placeholder="Amount (Rs)" value="${data ? data.amt : ''}" oninput="calculateShift()">
+        <button class="btn-remove" onclick="removeElem('cashin-${id}')">✕</button>
+    `;
+    container.appendChild(div);
+    div.dataset.time = timestamp;
+    if (!data) openAndScheduleAutoClose('sec-cashin');
+    calculateShift();
+}
+
+function addCashOut(data = null) {
+    const container = document.getElementById('cashOutList');
+    const id = Date.now() + Math.random();
+    const div = document.createElement('div');
+    div.className = 'flex-row';
+    div.id = `cashout-${id}`;
+    const timestamp = data ? data.time : getFormattedTime();
+
+    div.innerHTML = `
+        <span class="time-badge">${timestamp}</span>
+        <input type="text" class="cashout-person" placeholder="Receiver / Safe" value="${data ? data.person : ''}" oninput="calculateShift()">
+        <input type="number" class="cashout-amt" placeholder="Amount (Rs)" value="${data ? data.amt : ''}" oninput="calculateShift()">
+        <button class="btn-remove" onclick="removeElem('cashout-${id}')">✕</button>
+    `;
+    container.appendChild(div);
+    div.dataset.time = timestamp;
+    if (!data) openAndScheduleAutoClose('sec-cashout');
     calculateShift();
 }
 
@@ -370,12 +608,17 @@ function addFonepay(data = null) {
     const div = document.createElement('div');
     div.className = 'flex-row';
     div.id = `fonepay-${id}`;
+    const timestamp = data ? data.time : getFormattedTime();
+
     div.innerHTML = `
-        <input type="text" class="fonepay-remark" placeholder="Remark / Txn ID" value="${data ? data.remark : ''}" oninput="calculateShift()">
-        <input type="number" class="fonepay-amt" placeholder="Amount (₹)" value="${data ? data.amt : ''}" oninput="calculateShift()">
+        <span class="time-badge">${timestamp}</span>
+        <input type="text" class="fonepay-remark" placeholder="Txn ID / Remark" value="${data ? data.remark : ''}" oninput="calculateShift()">
+        <input type="number" class="fonepay-amt" placeholder="Amount (Rs)" value="${data ? data.amt : ''}" oninput="calculateShift()">
         <button class="btn-remove" onclick="removeElem('fonepay-${id}')">✕</button>
     `;
     container.appendChild(div);
+    div.dataset.time = timestamp;
+    if (!data) openAndScheduleAutoClose('sec-fonepay');
     calculateShift();
 }
 
@@ -385,12 +628,17 @@ function addCredit(data = null) {
     const div = document.createElement('div');
     div.className = 'flex-row';
     div.id = `credit-${id}`;
+    const timestamp = data ? data.time : getFormattedTime();
+
     div.innerHTML = `
+        <span class="time-badge">${timestamp}</span>
         <input type="text" class="credit-name" placeholder="Customer Name" value="${data ? data.name : ''}" oninput="calculateShift()">
-        <input type="number" class="credit-amt" placeholder="Amount (₹)" value="${data ? data.amt : ''}" oninput="calculateShift()">
+        <input type="number" class="credit-amt" placeholder="Amount (Rs)" value="${data ? data.amt : ''}" oninput="calculateShift()">
         <button class="btn-remove" onclick="removeElem('credit-${id}')">✕</button>
     `;
     container.appendChild(div);
+    div.dataset.time = timestamp;
+    if (!data) openAndScheduleAutoClose('sec-credit');
     calculateShift();
 }
 
@@ -400,20 +648,24 @@ function addStaffAdjustment(data = null) {
     const div = document.createElement('div');
     div.className = 'flex-row';
     div.id = `staff-${id}`;
+    const timestamp = data ? data.time : getFormattedTime();
     
     const typeGiven = data && data.type === 'given' ? 'selected' : '';
     const typeReceived = data && data.type === 'received' ? 'selected' : '';
 
     div.innerHTML = `
+        <span class="time-badge">${timestamp}</span>
         <input type="text" class="staff-name" placeholder="Staff Name" value="${data ? data.name : ''}" oninput="calculateShift()">
         <select class="staff-type" onchange="calculateShift()">
             <option value="given" ${typeGiven}>📤 Gave (-)</option>
             <option value="received" ${typeReceived}>📥 Received (+)</option>
         </select>
-        <input type="number" class="staff-amt" placeholder="Amount (₹)" value="${data ? data.amt : ''}" oninput="calculateShift()">
+        <input type="number" class="staff-amt" placeholder="Amount (Rs)" value="${data ? data.amt : ''}" oninput="calculateShift()">
         <button class="btn-remove" onclick="removeElem('staff-${id}')">✕</button>
     `;
     container.appendChild(div);
+    div.dataset.time = timestamp;
+    if (!data) openAndScheduleAutoClose('sec-staff');
     calculateShift();
 }
 
@@ -424,45 +676,124 @@ function removeElem(id) {
 
 function calculateShift() {
     let totalLiters = 0;
-    let expectedSale = 0;
+    let rawExpectedSale = 0;
+
+    let petrolLiters = 0, petrolAmt = 0;
+    let dieselLiters = 0, dieselAmt = 0;
 
     let nozzlesData = [];
-    document.querySelectorAll('#nozzlesList .card').forEach(card => {
-        let name = card.querySelector('.n-name').value;
+    const nozzleElems = document.querySelectorAll('#nozzlesList .card');
+    document.getElementById('count-nozzle').innerText = nozzleElems.length;
+
+    nozzleElems.forEach(card => {
+        let type = card.querySelector('.n-type').value;
         let oldR = parseFloat(card.querySelector('.n-old').value) || 0;
         let newR = parseFloat(card.querySelector('.n-new').value) || 0;
         let rate = parseFloat(card.querySelector('.n-rate').value) || 0;
 
         let liters = newR >= oldR ? newR - oldR : 0;
-        totalLiters += liters;
-        expectedSale += (liters * rate);
+        let amount = liters * rate;
 
-        nozzlesData.push({ name, oldR: card.querySelector('.n-old').value, newR: card.querySelector('.n-new').value, rate: card.querySelector('.n-rate').value });
+        totalLiters += liters;
+        rawExpectedSale += amount;
+
+        if (type === 'Petrol') {
+            petrolLiters += liters;
+            petrolAmt += amount;
+        } else {
+            dieselLiters += liters;
+            dieselAmt += amount;
+        }
+
+        nozzlesData.push({ 
+            type: type, 
+            oldR: card.querySelector('.n-old').value, 
+            newR: card.querySelector('.n-new').value, 
+            rate: card.querySelector('.n-rate').value 
+        });
+    });
+
+    let totalPurchaseReturnAmt = 0;
+    let purchaseReturnData = [];
+    const returnElems = document.querySelectorAll('#purchaseReturnList .flex-row');
+    document.getElementById('count-return').innerText = returnElems.length;
+
+    returnElems.forEach(row => {
+        let type = row.querySelector('.return-type').value;
+        let litersStr = row.querySelector('.return-liters').value;
+        let rateStr = row.querySelector('.return-rate').value;
+        let liters = parseFloat(litersStr) || 0;
+        let rate = parseFloat(rateStr) || 0;
+        let amt = liters * rate;
+
+        totalPurchaseReturnAmt += amt;
+        purchaseReturnData.push({ type, liters: litersStr, rate: rateStr });
+    });
+
+    document.getElementById('petrolLiters').innerText = petrolLiters.toFixed(2) + " L";
+    document.getElementById('petrolAmount').innerText = petrolAmt.toFixed(2);
+    document.getElementById('dieselLiters').innerText = dieselLiters.toFixed(2) + " L";
+    document.getElementById('dieselAmount').innerText = dieselAmt.toFixed(2);
+    document.getElementById('returnAmount').innerText = totalPurchaseReturnAmt.toFixed(2);
+
+    let totalCashInHand = 0;
+    let cashInHandData = [];
+    const cashInElems = document.querySelectorAll('#cashInHandList .flex-row');
+    document.getElementById('count-cashin').innerText = cashInElems.length;
+
+    cashInElems.forEach(row => {
+        let remark = row.querySelector('.cashin-remark').value;
+        let amtStr = row.querySelector('.cashin-amt').value;
+        let amt = parseFloat(amtStr) || 0;
+        totalCashInHand += amt;
+        cashInHandData.push({ remark, amt: amtStr, time: row.dataset.time });
+    });
+
+    let totalCashOut = 0;
+    let cashOutData = [];
+    const cashOutElems = document.querySelectorAll('#cashOutList .flex-row');
+    document.getElementById('count-cashout').innerText = cashOutElems.length;
+
+    cashOutElems.forEach(row => {
+        let person = row.querySelector('.cashout-person').value;
+        let amtStr = row.querySelector('.cashout-amt').value;
+        let amt = parseFloat(amtStr) || 0;
+        totalCashOut += amt;
+        cashOutData.push({ person, amt: amtStr, time: row.dataset.time });
     });
 
     let totalFonepay = 0;
     let fonepayData = [];
-    document.querySelectorAll('#fonepayList .flex-row').forEach(row => {
+    const fonepayElems = document.querySelectorAll('#fonepayList .flex-row');
+    document.getElementById('count-fonepay').innerText = fonepayElems.length;
+
+    fonepayElems.forEach(row => {
         let remark = row.querySelector('.fonepay-remark').value;
         let amtStr = row.querySelector('.fonepay-amt').value;
         let amt = parseFloat(amtStr) || 0;
         totalFonepay += amt;
-        fonepayData.push({ remark, amt: amtStr });
+        fonepayData.push({ remark, amt: amtStr, time: row.dataset.time });
     });
 
     let totalCredit = 0;
     let creditData = [];
-    document.querySelectorAll('#creditList .flex-row').forEach(row => {
+    const creditElems = document.querySelectorAll('#creditList .flex-row');
+    document.getElementById('count-credit').innerText = creditElems.length;
+
+    creditElems.forEach(row => {
         let name = row.querySelector('.credit-name').value;
         let amtStr = row.querySelector('.credit-amt').value;
         let amt = parseFloat(amtStr) || 0;
         totalCredit += amt;
-        creditData.push({ name, amt: amtStr });
+        creditData.push({ name, amt: amtStr, time: row.dataset.time });
     });
 
     let netStaffAdjustment = 0;
     let staffData = [];
-    document.querySelectorAll('#staffList .flex-row').forEach(row => {
+    const staffElems = document.querySelectorAll('#staffList .flex-row');
+    document.getElementById('count-staff').innerText = staffElems.length;
+
+    staffElems.forEach(row => {
         let name = row.querySelector('.staff-name').value;
         let type = row.querySelector('.staff-type').value;
         let amtStr = row.querySelector('.staff-amt').value;
@@ -471,64 +802,177 @@ function calculateShift() {
         if (type === 'given') netStaffAdjustment -= amt;
         else netStaffAdjustment += amt;
 
-        staffData.push({ name, type, amt: amtStr });
+        staffData.push({ name, type, amt: amtStr, time: row.dataset.time });
     });
 
     let openingBalance = parseFloat(document.getElementById('openingBalance').value) || 0;
-    let cashInHand = parseFloat(document.getElementById('cashInHand').value) || 0;
-    let cashOut = parseFloat(document.getElementById('cashOut').value) || 0;
     let sapat = parseFloat(document.getElementById('sapat').value) || 0;
 
-    let shiftCollection = cashInHand + cashOut + totalFonepay + totalCredit + sapat + netStaffAdjustment;
-    let totalTarget = expectedSale + openingBalance;
-    let difference = shiftCollection - totalTarget;
-
-    document.getElementById('hdrFonepayTotal').innerText = totalFonepay.toFixed(2);
-    document.getElementById('hdrCreditTotal').innerText = totalCredit.toFixed(2);
-    
-    let staffHdr = document.getElementById('hdrStaffNet');
-    if (netStaffAdjustment < 0) staffHdr.innerText = "- ₹ " + Math.abs(netStaffAdjustment).toFixed(2);
-    else if (netStaffAdjustment > 0) staffHdr.innerText = "+ ₹ " + netStaffAdjustment.toFixed(2);
-    else staffHdr.innerText = "₹ 0.00";
+    let shiftCollection = totalCashInHand + totalCashOut + totalFonepay + totalCredit + sapat + netStaffAdjustment;
+    let finalExpectedSale = (rawExpectedSale - totalPurchaseReturnAmt) + openingBalance;
+    let difference = shiftCollection - finalExpectedSale;
 
     document.getElementById('totalLiters').innerText = totalLiters.toFixed(2) + " L";
-    document.getElementById('expectedAmount').innerText = expectedSale.toFixed(2);
-    document.getElementById('summaryFonepay').innerText = totalFonepay.toFixed(2);
-    document.getElementById('summaryCredit').innerText = totalCredit.toFixed(2);
+    document.getElementById('expectedAmount').innerText = (rawExpectedSale - totalPurchaseReturnAmt).toFixed(2);
     document.getElementById('shiftCollection').innerText = shiftCollection.toFixed(2);
 
     let statusElement = document.getElementById('finalStatus');
+    let auditNote = document.getElementById('auditNote');
+
     if (difference > 0) {
-        statusElement.innerText = "+ ₹ " + difference.toFixed(2);
+        statusElement.innerText = "+ Rs. " + difference.toFixed(2);
         statusElement.className = "surplus";
+        auditNote.innerText = "Surplus (Extra Cash Found)";
     } else if (difference < 0) {
-        statusElement.innerText = "- ₹ " + Math.abs(difference).toFixed(2);
+        statusElement.innerText = "- Rs. " + Math.abs(difference).toFixed(2);
         statusElement.className = "shortage";
+        auditNote.innerText = "Shortage (Cash Deficit)";
     } else {
-        statusElement.innerText = "₹ 0.00";
+        statusElement.innerText = "Rs. 0.00";
         statusElement.className = "surplus";
+        auditNote.innerText = "Exact Match (Balanced)";
     }
 
     const state = {
         openingBalance: document.getElementById('openingBalance').value,
-        cashInHand: document.getElementById('cashInHand').value,
-        cashOut: document.getElementById('cashOut').value,
         sapat: document.getElementById('sapat').value,
         nozzles: nozzlesData,
+        purchaseReturns: purchaseReturnData,
+        cashInHand: cashInHandData,
+        cashOut: cashOutData,
         fonepay: fonepayData,
         credit: creditData,
         staff: staffData
     };
-    localStorage.setItem('petrol_pump_shift_data', JSON.stringify(state));
+    localStorage.setItem('petrol_pump_compact_data', JSON.stringify(state));
+}
+
+function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    let timeStr = document.getElementById('nepaliClock').innerText.replace('NPT: ', '');
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("PETROL PUMP SHIFT AUDIT REPORT", 105, 14, { align: "center" });
+    
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Generated Date & Time (NPT): ${timeStr}`, 105, 20, { align: "center" });
+    doc.line(14, 23, 196, 23);
+
+    let currentY = 27;
+
+    const tableStyles = {
+        theme: 'grid',
+        styles: { fontSize: 8, cellPadding: 2, font: 'helvetica' },
+        headStyles: { fillColor: [225, 231, 239], textColor: [15, 23, 42], fontStyle: 'bold', lineWidth: 0.1, lineColor: [200, 200, 200] },
+        bodyStyles: { lineWidth: 0.1, lineColor: [220, 220, 220] }
+    };
+
+    // 1. Nozzle Dispenser Log
+    const nozzleRows = [];
+    document.querySelectorAll('#nozzlesList .card').forEach((card, i) => {
+        let type = card.querySelector('.n-type').value;
+        let oldR = parseFloat(card.querySelector('.n-old').value) || 0;
+        let newR = parseFloat(card.querySelector('.n-new').value) || 0;
+        let rate = parseFloat(card.querySelector('.n-rate').value) || 0;
+        let liters = newR >= oldR ? newR - oldR : 0;
+        let amt = liters * rate;
+        nozzleRows.push([`Nozzle ${i+1} (${type})`, oldR.toFixed(2), newR.toFixed(2), liters.toFixed(2) + " L", rate.toFixed(2), "Rs. " + amt.toFixed(2)]);
+    });
+
+    if (nozzleRows.length > 0) {
+        doc.autoTable({
+            startY: currentY,
+            head: [['Nozzle Fuel', 'Opening Reading', 'Closing Reading', 'Volume', 'Rate (Rs)', 'Total Amount']],
+            body: nozzleRows,
+            ...tableStyles
+        });
+        currentY = doc.lastAutoTable.finalY + 6;
+    }
+
+    // 2. Purchase Return Table
+    const returnRows = [];
+    document.querySelectorAll('#purchaseReturnList .flex-row').forEach((row) => {
+        let type = row.querySelector('.return-type').value;
+        let liters = parseFloat(row.querySelector('.return-liters').value) || 0;
+        let rate = parseFloat(row.querySelector('.return-rate').value) || 0;
+        let amt = liters * rate;
+        returnRows.push([type, liters.toFixed(2) + " L", rate.toFixed(2), "Rs. " + amt.toFixed(2)]);
+    });
+
+    if (returnRows.length > 0) {
+        doc.autoTable({
+            startY: currentY,
+            head: [['Purchase Return Fuel', 'Returned Volume', 'Rate (Rs)', 'Deducted Amount']],
+            body: returnRows,
+            ...tableStyles
+        });
+        currentY = doc.lastAutoTable.finalY + 6;
+    }
+
+    // 3. Cash & Financial Ledger
+    const ledgerRows = [];
+    let opening = parseFloat(document.getElementById('openingBalance').value) || 0;
+    let sapat = parseFloat(document.getElementById('sapat').value) || 0;
+    if (opening > 0) ledgerRows.push(['- ', 'Opening Change Provided', 'Cash Base', '+ Rs. ' + opening.toFixed(2)]);
+    if (sapat > 0) ledgerRows.push(['- ', 'Salary Advance / Expense', 'Expense', '+ Rs. ' + sapat.toFixed(2)]);
+
+    document.querySelectorAll('#cashInHandList .flex-row').forEach(row => {
+        ledgerRows.push([row.dataset.time || '-', row.querySelector('.cashin-remark').value || 'Physical Cash', 'Counter Cash In Hand', '+ Rs. ' + (parseFloat(row.querySelector('.cashin-amt').value) || 0).toFixed(2)]);
+    });
+    document.querySelectorAll('#cashOutList .flex-row').forEach(row => {
+        ledgerRows.push([row.dataset.time || '-', row.querySelector('.cashout-person').value || 'Safe/Owner Deposit', 'Cash Handover Out', '+ Rs. ' + (parseFloat(row.querySelector('.cashout-amt').value) || 0).toFixed(2)]);
+    });
+    document.querySelectorAll('#fonepayList .flex-row').forEach(row => {
+        ledgerRows.push([row.dataset.time || '-', row.querySelector('.fonepay-remark').value || 'Online Txn', 'Fonepay / Digital', '+ Rs. ' + (parseFloat(row.querySelector('.fonepay-amt').value) || 0).toFixed(2)]);
+    });
+    document.querySelectorAll('#creditList .flex-row').forEach(row => {
+        ledgerRows.push([row.dataset.time || '-', row.querySelector('.credit-name').value || 'Customer', 'Credit Sale Ledger', '+ Rs. ' + (parseFloat(row.querySelector('.credit-amt').value) || 0).toFixed(2)]);
+    });
+    document.querySelectorAll('#staffList .flex-row').forEach(row => {
+        let type = row.querySelector('.staff-type').value;
+        let amt = parseFloat(row.querySelector('.staff-amt').value) || 0;
+        ledgerRows.push([row.dataset.time || '-', row.querySelector('.staff-name').value || 'Staff Member', `Staff ${type.toUpperCase()}`, (type === 'given' ? '- Rs. ' : '+ Rs. ') + amt.toFixed(2)]);
+    });
+
+    if (ledgerRows.length > 0) {
+        doc.autoTable({
+            startY: currentY,
+            head: [['Time (NPT)', 'Transaction Remark / Person', 'Collection Category', 'Recorded Amount']],
+            body: ledgerRows,
+            ...tableStyles
+        });
+        currentY = doc.lastAutoTable.finalY + 6;
+    }
+
+    // 4. Executive Summary Audit Table
+    const summaryRows = [
+        ['Total Fuel Volume Dispensed', document.getElementById('totalLiters').innerText],
+        ['Purchase Returns Deducted', "Rs. " + document.getElementById('returnAmount').innerText],
+        ['Expected Target Collection', "Rs. " + document.getElementById('expectedAmount').innerText],
+        ['Actual Total Collections Recorded', "Rs. " + document.getElementById('shiftCollection').innerText],
+        ['Audit Shift Status', document.getElementById('finalStatus').innerText + " (" + document.getElementById('auditNote').innerText + ")"]
+    ];
+
+    doc.autoTable({
+        startY: currentY,
+        head: [['Audit Summary Field', 'Shift Total']],
+        body: summaryRows,
+        ...tableStyles,
+        headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold' }
+    });
+
+    doc.save(`Shift_Audit_Report_${Date.now()}.pdf`);
 }
 
 function loadSavedData() {
-    const saved = localStorage.getItem('petrol_pump_shift_data');
+    const saved = localStorage.getItem('petrol_pump_compact_data');
     if (saved) {
         const state = JSON.parse(saved);
         document.getElementById('openingBalance').value = state.openingBalance || '';
-        document.getElementById('cashInHand').value = state.cashInHand || '';
-        document.getElementById('cashOut').value = state.cashOut || '';
         document.getElementById('sapat').value = state.sapat || '';
 
         document.getElementById('nozzlesList').innerHTML = '';
@@ -537,6 +981,21 @@ function loadSavedData() {
             state.nozzles.forEach(n => addNozzle(n));
         } else {
             addNozzle();
+        }
+
+        document.getElementById('purchaseReturnList').innerHTML = '';
+        if (state.purchaseReturns && state.purchaseReturns.length > 0) {
+            state.purchaseReturns.forEach(pr => addPurchaseReturn(pr));
+        }
+
+        document.getElementById('cashInHandList').innerHTML = '';
+        if (state.cashInHand && state.cashInHand.length > 0) {
+            state.cashInHand.forEach(c => addCashInHand(c));
+        }
+
+        document.getElementById('cashOutList').innerHTML = '';
+        if (state.cashOut && state.cashOut.length > 0) {
+            state.cashOut.forEach(co => addCashOut(co));
         }
 
         document.getElementById('fonepayList').innerHTML = '';
@@ -556,12 +1015,13 @@ function loadSavedData() {
     } else {
         addNozzle();
     }
+    updateNepaliClock();
     calculateShift();
 }
 
 function startNewShift() {
-    if (confirm("Kya aap naya shift start karna chahte hain? Pichla poora data clear ho jayega.")) {
-        localStorage.removeItem('petrol_pump_shift_data');
+    if (confirm("Reset current shift data and start fresh?")) {
+        localStorage.removeItem('petrol_pump_compact_data');
         location.reload();
     }
 }
