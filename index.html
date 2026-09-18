@@ -346,7 +346,7 @@
     </div>
     <div class="section-body closed" id="sec-cashout">
         <div id="cashOutList"></div>
-        <button class="btn-add" onclick="addCashOut()">➕ Add Cash Handover Entry</button>
+        <button class="btn-add" onclick="addCashHandover()">➕ Add Cash Handover Entry</button>
     </div>
 
     <!-- 6. Fonepay & Digital Transactions -->
@@ -369,9 +369,19 @@
         <button class="btn-add" onclick="addCredit()">➕ Add Credit Entry</button>
     </div>
 
-    <!-- 8. Staff Adjustments -->
+    <!-- 8. Old Credit Received -->
+    <div class="section-header closed" onclick="toggleSection('sec-recovery')">
+        <span>📥 8. Old Credit Received <span class="item-count-badge" id="count-recovery">0</span></span>
+        <span class="toggle-icon" id="icon-sec-recovery">▼</span>
+    </div>
+    <div class="section-body closed" id="sec-recovery">
+        <div id="recoveryList"></div>
+        <button class="btn-add" onclick="addRecovery()">➕ Add Old Payment Received</button>
+    </div>
+
+    <!-- 9. Staff Adjustments -->
     <div class="section-header closed" onclick="toggleSection('sec-staff')">
-        <span>👥 8. Staff Adjustments <span class="item-count-badge" id="count-staff">0</span></span>
+        <span>👥 9. Staff Adjustments <span class="item-count-badge" id="count-staff">0</span></span>
         <span class="toggle-icon" id="icon-sec-staff">▼</span>
     </div>
     <div class="section-body closed" id="sec-staff">
@@ -443,9 +453,7 @@
 
 <script>
 let nozzleCount = 0;
-let autoCloseTimers = {};
 
-// Toggle Section Open/Close
 function toggleSection(sectionId) {
     const body = document.getElementById(sectionId);
     const header = body.previousElementSibling;
@@ -459,25 +467,12 @@ function toggleSection(sectionId) {
     }
 }
 
-// Open section and schedule auto-close after 10 Seconds
-function openAndScheduleAutoClose(sectionId) {
+function openSection(sectionId) {
     const body = document.getElementById(sectionId);
     const header = body.previousElementSibling;
 
-    // Open Section
     body.classList.remove('closed');
     header.classList.remove('closed');
-
-    // Clear existing timer if any
-    if (autoCloseTimers[sectionId]) {
-        clearTimeout(autoCloseTimers[sectionId]);
-    }
-
-    // Set 10-Second Auto Close Timer
-    autoCloseTimers[sectionId] = setTimeout(() => {
-        body.classList.add('closed');
-        header.classList.add('closed');
-    }, 10000);
 }
 
 function updateNepaliClock() {
@@ -535,7 +530,7 @@ function addNozzle(data = null) {
         </div>
     `;
     container.appendChild(div);
-    if (!data) openAndScheduleAutoClose('sec-nozzle');
+    if (!data) openSection('sec-nozzle');
     calculateShift();
 }
 
@@ -558,7 +553,7 @@ function addPurchaseReturn(data = null) {
         <button class="btn-remove" onclick="removeElem('return-${id}')">✕</button>
     `;
     container.appendChild(div);
-    if (!data) openAndScheduleAutoClose('sec-return');
+    if (!data) openSection('sec-return');
     calculateShift();
 }
 
@@ -578,11 +573,11 @@ function addCashInHand(data = null) {
     `;
     container.appendChild(div);
     div.dataset.time = timestamp;
-    if (!data) openAndScheduleAutoClose('sec-cashin');
+    if (!data) openSection('sec-cashin');
     calculateShift();
 }
 
-function addCashOut(data = null) {
+function addCashHandover(data = null) {
     const container = document.getElementById('cashOutList');
     const id = Date.now() + Math.random();
     const div = document.createElement('div');
@@ -598,7 +593,7 @@ function addCashOut(data = null) {
     `;
     container.appendChild(div);
     div.dataset.time = timestamp;
-    if (!data) openAndScheduleAutoClose('sec-cashout');
+    if (!data) openSection('sec-cashout');
     calculateShift();
 }
 
@@ -618,7 +613,7 @@ function addFonepay(data = null) {
     `;
     container.appendChild(div);
     div.dataset.time = timestamp;
-    if (!data) openAndScheduleAutoClose('sec-fonepay');
+    if (!data) openSection('sec-fonepay');
     calculateShift();
 }
 
@@ -638,7 +633,27 @@ function addCredit(data = null) {
     `;
     container.appendChild(div);
     div.dataset.time = timestamp;
-    if (!data) openAndScheduleAutoClose('sec-credit');
+    if (!data) openSection('sec-credit');
+    calculateShift();
+}
+
+function addRecovery(data = null) {
+    const container = document.getElementById('recoveryList');
+    const id = Date.now() + Math.random();
+    const div = document.createElement('div');
+    div.className = 'flex-row';
+    div.id = `recovery-${id}`;
+    const timestamp = data ? data.time : getFormattedTime();
+
+    div.innerHTML = `
+        <span class="time-badge">${timestamp}</span>
+        <input type="text" class="recovery-name" placeholder="Customer Name" value="${data ? data.name : ''}" oninput="calculateShift()">
+        <input type="number" class="recovery-amt" placeholder="Amount Received (Rs)" value="${data ? data.amt : ''}" oninput="calculateShift()">
+        <button class="btn-remove" onclick="removeElem('recovery-${id}')">✕</button>
+    `;
+    container.appendChild(div);
+    div.dataset.time = timestamp;
+    if (!data) openSection('sec-recovery');
     calculateShift();
 }
 
@@ -665,7 +680,7 @@ function addStaffAdjustment(data = null) {
     `;
     container.appendChild(div);
     div.dataset.time = timestamp;
-    if (!data) openAndScheduleAutoClose('sec-staff');
+    if (!data) openSection('sec-staff');
     calculateShift();
 }
 
@@ -788,6 +803,19 @@ function calculateShift() {
         creditData.push({ name, amt: amtStr, time: row.dataset.time });
     });
 
+    let totalRecovery = 0;
+    let recoveryData = [];
+    const recoveryElems = document.querySelectorAll('#recoveryList .flex-row');
+    document.getElementById('count-recovery').innerText = recoveryElems.length;
+
+    recoveryElems.forEach(row => {
+        let name = row.querySelector('.recovery-name').value;
+        let amtStr = row.querySelector('.recovery-amt').value;
+        let amt = parseFloat(amtStr) || 0;
+        totalRecovery += amt;
+        recoveryData.push({ name, amt: amtStr, time: row.dataset.time });
+    });
+
     let netStaffAdjustment = 0;
     let staffData = [];
     const staffElems = document.querySelectorAll('#staffList .flex-row');
@@ -808,7 +836,7 @@ function calculateShift() {
     let openingBalance = parseFloat(document.getElementById('openingBalance').value) || 0;
     let sapat = parseFloat(document.getElementById('sapat').value) || 0;
 
-    let shiftCollection = totalCashInHand + totalCashOut + totalFonepay + totalCredit + sapat + netStaffAdjustment;
+    let shiftCollection = totalCashInHand + totalCashOut + totalFonepay + totalCredit + totalRecovery + sapat + netStaffAdjustment;
     let finalExpectedSale = (rawExpectedSale - totalPurchaseReturnAmt) + openingBalance;
     let difference = shiftCollection - finalExpectedSale;
 
@@ -842,6 +870,7 @@ function calculateShift() {
         cashOut: cashOutData,
         fonepay: fonepayData,
         credit: creditData,
+        recovery: recoveryData,
         staff: staffData
     };
     localStorage.setItem('petrol_pump_compact_data', JSON.stringify(state));
@@ -926,12 +955,27 @@ function generatePDF() {
     document.querySelectorAll('#cashOutList .flex-row').forEach(row => {
         ledgerRows.push([row.dataset.time || '-', row.querySelector('.cashout-person').value || 'Safe/Owner Deposit', 'Cash Handover Out', '+ Rs. ' + (parseFloat(row.querySelector('.cashout-amt').value) || 0).toFixed(2)]);
     });
+
+    // FONEPAY - Single Combined Total Row
+    let totalFonepayPdf = 0;
+    let fonepayCount = 0;
     document.querySelectorAll('#fonepayList .flex-row').forEach(row => {
-        ledgerRows.push([row.dataset.time || '-', row.querySelector('.fonepay-remark').value || 'Online Txn', 'Fonepay / Digital', '+ Rs. ' + (parseFloat(row.querySelector('.fonepay-amt').value) || 0).toFixed(2)]);
+        totalFonepayPdf += parseFloat(row.querySelector('.fonepay-amt').value) || 0;
+        fonepayCount++;
     });
+    if (totalFonepayPdf > 0) {
+        ledgerRows.push(['- ', `Total Fonepay Transactions (${fonepayCount} Entries)`, 'Fonepay / Digital Total', '+ Rs. ' + totalFonepayPdf.toFixed(2)]);
+    }
+
     document.querySelectorAll('#creditList .flex-row').forEach(row => {
         ledgerRows.push([row.dataset.time || '-', row.querySelector('.credit-name').value || 'Customer', 'Credit Sale Ledger', '+ Rs. ' + (parseFloat(row.querySelector('.credit-amt').value) || 0).toFixed(2)]);
     });
+    
+    // Old Credit Received Entries
+    document.querySelectorAll('#recoveryList .flex-row').forEach(row => {
+        ledgerRows.push([row.dataset.time || '-', row.querySelector('.recovery-name').value || 'Customer', 'Old Credit Received', '+ Rs. ' + (parseFloat(row.querySelector('.recovery-amt').value) || 0).toFixed(2)]);
+    });
+
     document.querySelectorAll('#staffList .flex-row').forEach(row => {
         let type = row.querySelector('.staff-type').value;
         let amt = parseFloat(row.querySelector('.staff-amt').value) || 0;
@@ -995,7 +1039,7 @@ function loadSavedData() {
 
         document.getElementById('cashOutList').innerHTML = '';
         if (state.cashOut && state.cashOut.length > 0) {
-            state.cashOut.forEach(co => addCashOut(co));
+            state.cashOut.forEach(co => addCashHandover(co));
         }
 
         document.getElementById('fonepayList').innerHTML = '';
@@ -1006,6 +1050,11 @@ function loadSavedData() {
         document.getElementById('creditList').innerHTML = '';
         if (state.credit && state.credit.length > 0) {
             state.credit.forEach(c => addCredit(c));
+        }
+
+        document.getElementById('recoveryList').innerHTML = '';
+        if (state.recovery && state.recovery.length > 0) {
+            state.recovery.forEach(r => addRecovery(r));
         }
 
         document.getElementById('staffList').innerHTML = '';
