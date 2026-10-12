@@ -1,4 +1,3 @@
-
 let nozzleCount = 0;
 
 function toggleSection(sectionId) {
@@ -499,9 +498,17 @@ function generatePDF() {
     document.querySelectorAll('#cashInHandList .flex-row').forEach(row => {
         ledgerRows.push([row.dataset.time || '-', row.querySelector('.cashin-remark').value || 'Physical Cash', 'Counter Cash In Hand', '+ Rs. ' + (parseFloat(row.querySelector('.cashin-amt').value) || 0).toFixed(2)]);
     });
+
+    // CASH HANDOVER OUT - Single Combined Total Row
+    let totalCashOutPdf = 0;
+    let cashOutCount = 0;
     document.querySelectorAll('#cashOutList .flex-row').forEach(row => {
-        ledgerRows.push([row.dataset.time || '-', row.querySelector('.cashout-person').value || 'Safe/Owner Deposit', 'Cash Handover Out', '+ Rs. ' + (parseFloat(row.querySelector('.cashout-amt').value) || 0).toFixed(2)]);
+        totalCashOutPdf += parseFloat(row.querySelector('.cashout-amt').value) || 0;
+        cashOutCount++;
     });
+    if (totalCashOutPdf > 0) {
+        ledgerRows.push(['- ', `Total Cash Handover Out (${cashOutCount} Entries)`, 'Cash Handover Out Total', '+ Rs. ' + totalCashOutPdf.toFixed(2)]);
+    }
 
     // FONEPAY - Single Combined Total Row
     let totalFonepayPdf = 0;
@@ -514,9 +521,16 @@ function generatePDF() {
         ledgerRows.push(['- ', `Total Fonepay Transactions (${fonepayCount} Entries)`, 'Fonepay / Digital Total', '+ Rs. ' + totalFonepayPdf.toFixed(2)]);
     }
 
+    // CREDIT SALE LEDGER - Single Combined Total Row
+    let totalCreditPdf = 0;
+    let creditCount = 0;
     document.querySelectorAll('#creditList .flex-row').forEach(row => {
-        ledgerRows.push([row.dataset.time || '-', row.querySelector('.credit-name').value || 'Customer', 'Credit Sale Ledger', '+ Rs. ' + (parseFloat(row.querySelector('.credit-amt').value) || 0).toFixed(2)]);
+        totalCreditPdf += parseFloat(row.querySelector('.credit-amt').value) || 0;
+        creditCount++;
     });
+    if (totalCreditPdf > 0) {
+        ledgerRows.push(['- ', `Total Credit Sales (${creditCount} Entries)`, 'Credit Sale Ledger Total', '+ Rs. ' + totalCreditPdf.toFixed(2)]);
+    }
     
     // Old Credit Received Entries
     document.querySelectorAll('#recoveryList .flex-row').forEach(row => {
@@ -625,3 +639,4 @@ function startNewShift() {
 window.onload = function() {
     loadSavedData();
 };
+
