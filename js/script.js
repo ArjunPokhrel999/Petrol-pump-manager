@@ -1,5 +1,8 @@
 let nozzleCount = 0;
 
+// SVG Icon definition for remove button
+const closeIconSVG = `<svg class="icon-inline" style="margin:0; width:12px; height:12px;" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
+
 function toggleSection(sectionId) {
     const body = document.getElementById(sectionId);
     const header = body.previousElementSibling;
@@ -49,6 +52,80 @@ function getFormattedTime() {
 
 setInterval(updateNepaliClock, 1000);
 
+// Cash Denominator Calculation (Including IC)
+function calculateDenominator() {
+    let total = 0;
+    const rows = document.querySelectorAll('.denom-row');
+    
+    // 1. Calculate NC Denominations
+    rows.forEach(row => {
+        const input = row.querySelector('.denom-input');
+        const subtotalSpan = row.querySelector('.denom-subtotal');
+        
+        let count = parseInt(input.value) || 0;
+        let denomValue = parseInt(input.getAttribute('data-val'));
+        let subtotal = count * denomValue;
+        
+        subtotalSpan.innerText = 'Rs. ' + subtotal.toLocaleString();
+        total += subtotal;
+    });
+
+    // 2. Calculate IC Cash Denomination
+    let icAmount = parseFloat(document.getElementById('icAmount').value) || 0;
+    let icRate = parseFloat(document.getElementById('icRate').value) || 1.6;
+    let icSubtotal = icAmount * icRate;
+
+    document.getElementById('icSubtotal').innerText = 'Rs. ' + icSubtotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    total += icSubtotal;
+    
+    document.getElementById('totalDenomAmount').innerText = total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+// Add Denominator Total to Cash Handover
+function addDenomToCashOut() {
+    let totalNC = 0;
+    const rows = document.querySelectorAll('.denom-row');
+    
+    rows.forEach(row => {
+        const input = row.querySelector('.denom-input');
+        let count = parseInt(input.value) || 0;
+        let denomValue = parseInt(input.getAttribute('data-val'));
+        totalNC += (count * denomValue);
+    });
+
+    let icAmount = parseFloat(document.getElementById('icAmount').value) || 0;
+    let icRate = parseFloat(document.getElementById('icRate').value) || 1.6;
+    let totalICinNC = icAmount * icRate;
+    let grandTotal = totalNC + totalICinNC;
+
+    if (grandTotal <= 0) {
+        alert("Pehle notes count ya IC amount enter karein!");
+        return;
+    }
+
+    let remark = "Deno Handover";
+    if (icAmount > 0) {
+        remark += ` (Inc. IC ${icAmount} @${icRate})`;
+    }
+
+    addCashHandover({ 
+        person: remark, 
+        amt: grandTotal.toFixed(2),
+        time: getFormattedTime() 
+    });
+
+    // Reset Denominator Inputs
+    rows.forEach(row => {
+        row.querySelector('.denom-input').value = '';
+        row.querySelector('.denom-subtotal').innerText = 'Rs. 0';
+    });
+    document.getElementById('icAmount').value = '';
+    document.getElementById('icSubtotal').innerText = 'Rs. 0';
+    document.getElementById('totalDenomAmount').innerText = '0.00';
+    
+    openSection('sec-cashout');
+}
+
 function addNozzle(data = null) {
     nozzleCount++;
     const container = document.getElementById('nozzlesList');
@@ -96,7 +173,7 @@ function addPurchaseReturn(data = null) {
         </select>
         <input type="number" class="return-liters" placeholder="Liters" value="${data ? data.liters : ''}" oninput="calculateShift()">
         <input type="number" class="return-rate" placeholder="Rate / L" value="${data ? data.rate : ''}" oninput="calculateShift()">
-        <button class="btn-remove" onclick="removeElem('return-${id}')">✕</button>
+        <button class="btn-remove" onclick="removeElem('return-${id}')">${closeIconSVG}</button>
     `;
     container.appendChild(div);
     if (!data) openSection('sec-return');
@@ -115,7 +192,7 @@ function addCashInHand(data = null) {
         <span class="time-badge">${timestamp}</span>
         <input type="text" class="cashin-remark" placeholder="Remark / Counter" value="${data ? data.remark : ''}" oninput="calculateShift()">
         <input type="number" class="cashin-amt" placeholder="Amount (Rs)" value="${data ? data.amt : ''}" oninput="calculateShift()">
-        <button class="btn-remove" onclick="removeElem('cashin-${id}')">✕</button>
+        <button class="btn-remove" onclick="removeElem('cashin-${id}')">${closeIconSVG}</button>
     `;
     container.appendChild(div);
     div.dataset.time = timestamp;
@@ -129,13 +206,15 @@ function addCashHandover(data = null) {
     const div = document.createElement('div');
     div.className = 'flex-row';
     div.id = `cashout-${id}`;
-    const timestamp = data ? data.time : getFormattedTime();
+    
+    // Fixed timestamp assignment to prevent undefined
+    const timestamp = (data && data.time) ? data.time : getFormattedTime();
 
     div.innerHTML = `
         <span class="time-badge">${timestamp}</span>
         <input type="text" class="cashout-person" placeholder="Receiver / Safe" value="${data ? data.person : ''}" oninput="calculateShift()">
         <input type="number" class="cashout-amt" placeholder="Amount (Rs)" value="${data ? data.amt : ''}" oninput="calculateShift()">
-        <button class="btn-remove" onclick="removeElem('cashout-${id}')">✕</button>
+        <button class="btn-remove" onclick="removeElem('cashout-${id}')">${closeIconSVG}</button>
     `;
     container.appendChild(div);
     div.dataset.time = timestamp;
@@ -151,11 +230,14 @@ function addFonepay(data = null) {
     div.id = `fonepay-${id}`;
     const timestamp = data ? data.time : getFormattedTime();
 
+    let randomTxnId = 'FP-' + Math.floor(10000 + Math.random() * 90000);
+    let remarkVal = data ? data.remark : randomTxnId;
+
     div.innerHTML = `
         <span class="time-badge">${timestamp}</span>
-        <input type="text" class="fonepay-remark" placeholder="Txn ID / Remark" value="${data ? data.remark : ''}" oninput="calculateShift()">
+        <input type="text" class="fonepay-remark" placeholder="Txn ID / Remark" value="${remarkVal}" oninput="calculateShift()">
         <input type="number" class="fonepay-amt" placeholder="Amount (Rs)" value="${data ? data.amt : ''}" oninput="calculateShift()">
-        <button class="btn-remove" onclick="removeElem('fonepay-${id}')">✕</button>
+        <button class="btn-remove" onclick="removeElem('fonepay-${id}')">${closeIconSVG}</button>
     `;
     container.appendChild(div);
     div.dataset.time = timestamp;
@@ -175,7 +257,7 @@ function addCredit(data = null) {
         <span class="time-badge">${timestamp}</span>
         <input type="text" class="credit-name" placeholder="Customer Name" value="${data ? data.name : ''}" oninput="calculateShift()">
         <input type="number" class="credit-amt" placeholder="Amount (Rs)" value="${data ? data.amt : ''}" oninput="calculateShift()">
-        <button class="btn-remove" onclick="removeElem('credit-${id}')">✕</button>
+        <button class="btn-remove" onclick="removeElem('credit-${id}')">${closeIconSVG}</button>
     `;
     container.appendChild(div);
     div.dataset.time = timestamp;
@@ -195,7 +277,7 @@ function addRecovery(data = null) {
         <span class="time-badge">${timestamp}</span>
         <input type="text" class="recovery-name" placeholder="Customer Name" value="${data ? data.name : ''}" oninput="calculateShift()">
         <input type="number" class="recovery-amt" placeholder="Amount Received (Rs)" value="${data ? data.amt : ''}" oninput="calculateShift()">
-        <button class="btn-remove" onclick="removeElem('recovery-${id}')">✕</button>
+        <button class="btn-remove" onclick="removeElem('recovery-${id}')">${closeIconSVG}</button>
     `;
     container.appendChild(div);
     div.dataset.time = timestamp;
@@ -218,11 +300,11 @@ function addStaffAdjustment(data = null) {
         <span class="time-badge">${timestamp}</span>
         <input type="text" class="staff-name" placeholder="Staff Name" value="${data ? data.name : ''}" oninput="calculateShift()">
         <select class="staff-type" onchange="calculateShift()">
-            <option value="given" ${typeGiven}>📤 Gave (-)</option>
-            <option value="received" ${typeReceived}>📥 Received (+)</option>
+            <option value="given" ${typeGiven}>Gave (-)</option>
+            <option value="received" ${typeReceived}>Received (+)</option>
         </select>
         <input type="number" class="staff-amt" placeholder="Amount (Rs)" value="${data ? data.amt : ''}" oninput="calculateShift()">
-        <button class="btn-remove" onclick="removeElem('staff-${id}')">✕</button>
+        <button class="btn-remove" onclick="removeElem('staff-${id}')">${closeIconSVG}</button>
     `;
     container.appendChild(div);
     div.dataset.time = timestamp;
@@ -422,6 +504,98 @@ function calculateShift() {
     localStorage.setItem('petrol_pump_compact_data', JSON.stringify(state));
 }
 
+// Download Fonepay List PDF
+function downloadFonepayPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let timeStr = document.getElementById('nepaliClock').innerText.replace('NPT: ', '');
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("FONEPAY & DIGITAL TRANSACTIONS REPORT", 105, 14, { align: "center" });
+    
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Generated Date & Time (NPT): ${timeStr}`, 105, 20, { align: "center" });
+    doc.line(14, 23, 196, 23);
+
+    const rows = [];
+    let total = 0;
+    document.querySelectorAll('#fonepayList .flex-row').forEach((row, index) => {
+        let time = row.dataset.time || '-';
+        let remark = row.querySelector('.fonepay-remark').value || 'N/A';
+        let amt = parseFloat(row.querySelector('.fonepay-amt').value) || 0;
+        total += amt;
+        rows.push([index + 1, time, remark, "Rs. " + amt.toFixed(2)]);
+    });
+
+    if (rows.length === 0) {
+        alert("Fonepay list khali hai!");
+        return;
+    }
+
+    doc.autoTable({
+        startY: 27,
+        head: [['#', 'Time (NPT)', 'Transaction ID / Remark', 'Amount']],
+        body: rows,
+        theme: 'grid',
+        styles: { fontSize: 9, cellPadding: 3, font: 'helvetica' },
+        headStyles: { fillColor: [23, 162, 184], textColor: [255, 255, 255], fontStyle: 'bold' }
+    });
+
+    let finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFont("helvetica", "bold");
+    doc.text(`Total Fonepay Collection: Rs. ${total.toFixed(2)}`, 14, finalY);
+
+    doc.save(`Fonepay_Transactions_${Date.now()}.pdf`);
+}
+
+// Download Credit List PDF
+function downloadCreditPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let timeStr = document.getElementById('nepaliClock').innerText.replace('NPT: ', '');
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("LEDGER & CREDIT SALES REPORT", 105, 14, { align: "center" });
+    
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Generated Date & Time (NPT): ${timeStr}`, 105, 20, { align: "center" });
+    doc.line(14, 23, 196, 23);
+
+    const rows = [];
+    let total = 0;
+    document.querySelectorAll('#creditList .flex-row').forEach((row, index) => {
+        let time = row.dataset.time || '-';
+        let name = row.querySelector('.credit-name').value || 'Customer';
+        let amt = parseFloat(row.querySelector('.credit-amt').value) || 0;
+        total += amt;
+        rows.push([index + 1, time, name, "Rs. " + amt.toFixed(2)]);
+    });
+
+    if (rows.length === 0) {
+        alert("Credit list khali hai!");
+        return;
+    }
+
+    doc.autoTable({
+        startY: 27,
+        head: [['#', 'Time (NPT)', 'Customer Name', 'Credit Amount']],
+        body: rows,
+        theme: 'grid',
+        styles: { fontSize: 9, cellPadding: 3, font: 'helvetica' },
+        headStyles: { fillColor: [23, 162, 184], textColor: [255, 255, 255], fontStyle: 'bold' }
+    });
+
+    let finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFont("helvetica", "bold");
+    doc.text(`Total Credit Sales: Rs. ${total.toFixed(2)}`, 14, finalY);
+
+    doc.save(`Credit_Sales_Report_${Date.now()}.pdf`);
+}
+
 function generatePDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -499,7 +673,6 @@ function generatePDF() {
         ledgerRows.push([row.dataset.time || '-', row.querySelector('.cashin-remark').value || 'Physical Cash', 'Counter Cash In Hand', '+ Rs. ' + (parseFloat(row.querySelector('.cashin-amt').value) || 0).toFixed(2)]);
     });
 
-    // CASH HANDOVER OUT - Single Combined Total Row
     let totalCashOutPdf = 0;
     let cashOutCount = 0;
     document.querySelectorAll('#cashOutList .flex-row').forEach(row => {
@@ -510,7 +683,6 @@ function generatePDF() {
         ledgerRows.push(['- ', `Total Cash Handover Out (${cashOutCount} Entries)`, 'Cash Handover Out Total', '+ Rs. ' + totalCashOutPdf.toFixed(2)]);
     }
 
-    // FONEPAY - Single Combined Total Row
     let totalFonepayPdf = 0;
     let fonepayCount = 0;
     document.querySelectorAll('#fonepayList .flex-row').forEach(row => {
@@ -521,7 +693,6 @@ function generatePDF() {
         ledgerRows.push(['- ', `Total Fonepay Transactions (${fonepayCount} Entries)`, 'Fonepay / Digital Total', '+ Rs. ' + totalFonepayPdf.toFixed(2)]);
     }
 
-    // CREDIT SALE LEDGER - Single Combined Total Row
     let totalCreditPdf = 0;
     let creditCount = 0;
     document.querySelectorAll('#creditList .flex-row').forEach(row => {
@@ -532,7 +703,6 @@ function generatePDF() {
         ledgerRows.push(['- ', `Total Credit Sales (${creditCount} Entries)`, 'Credit Sale Ledger Total', '+ Rs. ' + totalCreditPdf.toFixed(2)]);
     }
     
-    // Old Credit Received Entries
     document.querySelectorAll('#recoveryList .flex-row').forEach(row => {
         ledgerRows.push([row.dataset.time || '-', row.querySelector('.recovery-name').value || 'Customer', 'Old Credit Received', '+ Rs. ' + (parseFloat(row.querySelector('.recovery-amt').value) || 0).toFixed(2)]);
     });
