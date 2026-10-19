@@ -180,6 +180,26 @@ function addPurchaseReturn(data = null) {
     calculateShift();
 }
 
+function addCashInHand(data = null) {
+    const container = document.getElementById('cashInHandList');
+    const id = Date.now() + Math.random();
+    const div = document.createElement('div');
+    div.className = 'flex-row';
+    div.id = `cashin-${id}`;
+    const timestamp = data ? data.time : getFormattedTime();
+
+    div.innerHTML = `
+        <span class="time-badge">${timestamp}</span>
+        <input type="text" class="cashin-remark" placeholder="Remark / Counter" value="${data ? data.remark : ''}" oninput="calculateShift()">
+        <input type="number" class="cashin-amt" placeholder="Amount (Rs)" value="${data ? data.amt : ''}" oninput="calculateShift()">
+        <button class="btn-remove" onclick="removeElem('cashin-${id}')">${closeIconSVG}</button>
+    `;
+    container.appendChild(div);
+    div.dataset.time = timestamp;
+    if (!data) openSection('sec-cashin');
+    calculateShift();
+}
+
 function addCashHandover(data = null) {
     const container = document.getElementById('cashOutList');
     const id = Date.now() + Math.random();
@@ -359,6 +379,19 @@ function calculateShift() {
     document.getElementById('dieselAmount').innerText = dieselAmt.toFixed(2);
     document.getElementById('returnAmount').innerText = totalPurchaseReturnAmt.toFixed(2);
 
+    let totalCashInHand = 0;
+    let cashInHandData = [];
+    const cashInElems = document.querySelectorAll('#cashInHandList .flex-row');
+    document.getElementById('count-cashin').innerText = cashInElems.length;
+
+    cashInElems.forEach(row => {
+        let remark = row.querySelector('.cashin-remark').value;
+        let amtStr = row.querySelector('.cashin-amt').value;
+        let amt = parseFloat(amtStr) || 0;
+        totalCashInHand += amt;
+        cashInHandData.push({ remark, amt: amtStr, time: row.dataset.time });
+    });
+
     let totalCashOut = 0;
     let cashOutData = [];
     const cashOutElems = document.querySelectorAll('#cashOutList .flex-row');
@@ -431,7 +464,7 @@ function calculateShift() {
     let openingBalance = parseFloat(document.getElementById('openingBalance').value) || 0;
     let sapat = parseFloat(document.getElementById('sapat').value) || 0;
 
-    let shiftCollection = totalCashOut + totalFonepay + totalCredit + totalRecovery + sapat + netStaffAdjustment;
+    let shiftCollection = totalCashInHand + totalCashOut + totalFonepay + totalCredit + totalRecovery + sapat + netStaffAdjustment;
     let finalExpectedSale = (rawExpectedSale - totalPurchaseReturnAmt) + openingBalance;
     let difference = shiftCollection - finalExpectedSale;
 
@@ -461,6 +494,7 @@ function calculateShift() {
         sapat: document.getElementById('sapat').value,
         nozzles: nozzlesData,
         purchaseReturns: purchaseReturnData,
+        cashInHand: cashInHandData,
         cashOut: cashOutData,
         fonepay: fonepayData,
         credit: creditData,
@@ -635,7 +669,9 @@ function generatePDF() {
     if (opening > 0) ledgerRows.push(['- ', 'Opening Change Provided', 'Cash Base', '+ Rs. ' + opening.toFixed(2)]);
     if (sapat > 0) ledgerRows.push(['- ', 'Salary Advance / Expense', 'Expense', '+ Rs. ' + sapat.toFixed(2)]);
 
-
+    document.querySelectorAll('#cashInHandList .flex-row').forEach(row => {
+        ledgerRows.push([row.dataset.time || '-', row.querySelector('.cashin-remark').value || 'Physical Cash', 'Counter Cash In Hand', '+ Rs. ' + (parseFloat(row.querySelector('.cashin-amt').value) || 0).toFixed(2)]);
+    });
 
     let totalCashOutPdf = 0;
     let cashOutCount = 0;
@@ -727,6 +763,11 @@ function loadSavedData() {
             state.purchaseReturns.forEach(pr => addPurchaseReturn(pr));
         }
 
+        document.getElementById('cashInHandList').innerHTML = '';
+        if (state.cashInHand && state.cashInHand.length > 0) {
+            state.cashInHand.forEach(c => addCashInHand(c));
+        }
+
         document.getElementById('cashOutList').innerHTML = '';
         if (state.cashOut && state.cashOut.length > 0) {
             state.cashOut.forEach(co => addCashHandover(co));
@@ -763,71 +804,6 @@ function startNewShift() {
         localStorage.removeItem('petrol_pump_compact_data');
         location.reload();
     }
-}
-
-
-// Hamburger quick navigation
-function toggleQuickMenu() {
-    document.getElementById('quickMenu').classList.toggle('closed');
-}
-function closeQuickMenu() { document.getElementById('quickMenu').classList.add('closed'); }
-function menuOpenSection(id) {
-    openSection(id);
-    closeQuickMenu();
-    document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function downloadBackupJSON() {
-    const raw = localStorage.getItem('petrol_pump_compact_data') || '{}';
-    const blob = new Blob([JSON.stringify({ app: 'Petrol Pump Shift Tracker', exportedAt: new Date().toISOString(), data: JSON.parse(raw) }, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = `Petrol_Pump_Backup_${Date.now()}.json`; a.click();
-    URL.revokeObjectURL(url);
-}
-function restoreBackupJSON() { document.getElementById('backupRestoreFile').click(); }
-function handleBackupRestore(event) {
-    const file = event.target.files && event.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-        try {
-            const parsed = JSON.parse(reader.result);
-            const data = parsed.data || parsed;
-            if (!data || typeof data !== 'object') throw new Error('Invalid backup');
-            localStorage.setItem('petrol_pump_compact_data', JSON.stringify(data));
-            alert('Backup restored. Page reload hoga.'); location.reload();
-        } catch (e) { alert('Backup file valid JSON nahi hai.'); }
-        event.target.value = '';
-    };
-    reader.readAsText(file);
-}
-
-// Google Drive backup: first use requires a Google OAuth Web Client ID.
-async function backupToGoogleDrive() {
-    const raw = localStorage.getItem('petrol_pump_compact_data') || '{}';
-    let clientId = localStorage.getItem('petrol_pump_drive_client_id');
-    if (!clientId) {
-        clientId = prompt('Google Cloud ka OAuth Web Client ID paste karein. Drive API + Google Identity Services enable hona chahiye:');
-        if (!clientId) return;
-        localStorage.setItem('petrol_pump_drive_client_id', clientId.trim());
-    }
-    if (!window.google || !google.accounts || !google.accounts.oauth2) {
-        alert('Google sign-in library load nahi hui. Internet connection check karke dobara try karein.'); return;
-    }
-    const tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: clientId.trim(), scope: 'https://www.googleapis.com/auth/drive.file',
-        callback: async (tokenResponse) => {
-            if (tokenResponse.error || !tokenResponse.access_token) { alert('Google Drive permission nahi mili.'); return; }
-            try {
-                const metadata = { name: `Petrol_Pump_Backup_${new Date().toISOString().replace(/[:.]/g, '-')}.json`, mimeType: 'application/json' };
-                const boundary = '-------petrolpumpbackupboundary';
-                const payload = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify({ app: 'Petrol Pump Shift Tracker', exportedAt: new Date().toISOString(), data: JSON.parse(raw) }, null, 2)}\r\n--${boundary}--`;
-                const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', { method: 'POST', headers: { Authorization: `Bearer ${tokenResponse.access_token}`, 'Content-Type': `multipart/related; boundary=${boundary}` }, body: payload });
-                if (!response.ok) throw new Error(await response.text());
-                const result = await response.json(); alert(`Google Drive backup complete: ${result.name || 'Backup file'}`);
-            } catch (error) { console.error(error); alert('Drive backup fail hua. OAuth Client ID, Drive API aur authorized origin check karein.'); }
-        }
-    });
-    tokenClient.requestAccessToken({ prompt: 'consent' });
 }
 
 window.onload = function() {

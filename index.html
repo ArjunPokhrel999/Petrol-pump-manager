@@ -6,11 +6,11 @@
     <title>Petrol Pump Shift Tracker</title>
     
     <!-- PDF Generation Libraries -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/upgrades.css">
 </head>
 <body>
 
@@ -21,21 +21,6 @@
             Petrol Pump Shift Tracker
         </div>
         <div class="header-time" id="nepaliClock">Loading Nepali Time...</div>
-        <button class="hamburger-btn" onclick="toggleQuickMenu()" aria-label="Open menu">☰</button>
-        <nav id="quickMenu" class="quick-menu closed">
-            <button onclick="menuOpenSection('sec-credit')">Credit List</button>
-            <button onclick="menuOpenSection('sec-fonepay')">Fonepay List</button>
-            <button onclick="menuOpenSection('sec-denomination')">Denomination List</button>
-            <button onclick="menuOpenSection('sec-cashout')">Cash Handover</button>
-            <hr>
-            <strong class="quick-menu-label">Downloads</strong>
-            <button onclick="generatePDF(); closeQuickMenu();">Shift Report PDF</button>
-            <button onclick="downloadCreditPDF(); closeQuickMenu();">Credit List PDF</button>
-            <button onclick="downloadFonepayPDF(); closeQuickMenu();">Fonepay List PDF</button>
-            <button onclick="downloadBackupJSON(); closeQuickMenu();">Download Backup JSON</button>
-            <button onclick="backupToGoogleDrive(); closeQuickMenu();">Backup to Google Drive</button>
-            <button onclick="restoreBackupJSON(); closeQuickMenu();">Restore Backup File</button>
-        </nav>
     </div>
 
     <!-- 1. Meter Readings Section -->
@@ -93,11 +78,31 @@
         </div>
     </div>
 
-    <!-- Denomination Counter kept separate from handover -->
-    <div class="section-header closed" onclick="toggleSection('sec-denomination')">
-        <span>💵 Denomination List</span><span class="toggle-icon" id="icon-sec-denomination">▼</span>
+    <!-- 4. Cash In Hand (Counter Logs) -->
+    <div class="section-header closed" onclick="toggleSection('sec-cashin')">
+        <span>
+            <svg class="icon-inline" viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+            4. Cash In Hand (Counter Logs) <span class="item-count-badge" id="count-cashin">0</span>
+        </span>
+        <span class="toggle-icon" id="icon-sec-cashin">▼</span>
     </div>
-    <div class="section-body closed" id="sec-denomination">
+    <div class="section-body closed" id="sec-cashin">
+        <div id="cashInHandList"></div>
+        <button class="btn-add" onclick="addCashInHand()">
+            <svg class="icon-inline" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            Add Cash In Hand Entry
+        </button>
+    </div>
+
+    <!-- 5. Cash Handover / Safe Deposit -->
+    <div class="section-header closed" onclick="toggleSection('sec-cashout')">
+        <span>
+            <svg class="icon-inline" viewBox="0 0 24 24"><path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zm-4.5-9L2 6v2h19V6l-9.5-5z"/></svg>
+            5. Cash Handover / Safe Deposit <span class="item-count-badge" id="count-cashout">0</span>
+        </span>
+        <span class="toggle-icon" id="icon-sec-cashout">▼</span>
+    </div>
+    <div class="section-body closed" id="sec-cashout">
         <!-- Optional Denomination Calculator Box -->
         <div class="card" style="margin-bottom: 10px; background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2);">
             <h4 style="margin-bottom: 8px; font-size:13px; color:var(--text-main); display:flex; justify-content:space-between; align-items:center;">
@@ -161,17 +166,6 @@
             </div>
         </div>
 
-    </div>
-
-    <!-- 5. Cash Handover / Safe Deposit -->
-    <div class="section-header closed" onclick="toggleSection('sec-cashout')">
-        <span>
-            <svg class="icon-inline" viewBox="0 0 24 24"><path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zm-4.5-9L2 6v2h19V6l-9.5-5z"/></svg>
-            5. Cash Handover / Safe Deposit <span class="item-count-badge" id="count-cashout">0</span>
-        </span>
-        <span class="toggle-icon" id="icon-sec-cashout">▼</span>
-    </div>
-    <div class="section-body closed" id="sec-cashout">
         <div id="cashOutList"></div>
         <button class="btn-add" onclick="addCashHandover()">
             <svg class="icon-inline" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -194,6 +188,10 @@
                 <svg class="icon-inline" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                 Add Digital Entry
             </button>
+            <button class="btn-compact" onclick="downloadFonepayPDF()">
+                <svg class="icon-inline" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                Download PDF
+            </button>
         </div>
     </div>
 
@@ -211,6 +209,10 @@
             <button class="btn-add" style="flex:1;" onclick="addCredit()">
                 <svg class="icon-inline" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                 Add Credit Entry
+            </button>
+            <button class="btn-compact" onclick="downloadCreditPDF()">
+                <svg class="icon-inline" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                Download PDF
             </button>
         </div>
     </div>
@@ -307,14 +309,18 @@
             </div>
         </div>
         
+        <button class="btn-download-pdf" onclick="generatePDF()">
+            <svg class="icon-inline" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            Download Shift Audit PDF
+        </button>
         <button class="btn-new-shift" onclick="startNewShift()">
             <svg class="icon-inline" viewBox="0 0 24 24"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 17.8C6.25 16.96 6 16.01 6 15c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.45.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/></svg>
             Clear Shift & Reset Data
         </button>
     </div>
 </div>
-<input type="file" id="backupRestoreFile" accept="application/json,.json" hidden onchange="handleBackupRestore(event)">
 <script src="./js/script.js"></script>
+<script src="./js/upgrades.js"></script>
 </body>
 </html>
 

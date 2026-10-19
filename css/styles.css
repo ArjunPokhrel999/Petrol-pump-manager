@@ -347,11 +347,3 @@ body {
     flex-shrink: 0;
 }
 
-
-/* Hamburger quick menu */
-.header { position: relative; }
-.hamburger-btn { position: absolute; right: 10px; top: 10px; border: 1px solid var(--border-color); background: #fff; color: var(--text-main); border-radius: 8px; padding: 5px 9px; font-size: 20px; cursor: pointer; line-height: 1.1; }
-.quick-menu { position: absolute; z-index: 100; top: 48px; right: 8px; width: min(245px, calc(100vw - 40px)); background: #fff; border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 8px 24px rgba(15,23,42,.18); padding: 6px; display: flex; flex-direction: column; gap: 3px; text-align: left; }
-.quick-menu.closed { display: none; }
-.quick-menu button { text-align: left; padding: 10px 12px; border: 0; border-radius: 7px; background: transparent; color: var(--text-main); font-size: 13px; font-weight: 650; cursor: pointer; }
-.quick-menu button:hover { background: #eff6ff; }
